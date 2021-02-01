@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "453670730654",
+    "firebase_url": "https://findtheword-70664-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "findtheword-70664",
+    "storage_bucket": "findtheword-70664.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:453670730654:android:576b2f0eed2638eee4f48f",
+        "android_client_info": {
+          "package_name": "net.cclounge.findtheword"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "453670730654-gidloh7c74301p9u333u2vtlblp9dk06.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDk8710po2BuQzPjA0ysY3X7TSIckj2aVQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "453670730654-gidloh7c74301p9u333u2vtlblp9dk06.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
