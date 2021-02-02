@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class PageFactory {
 
   static Widget fromPageState(Object pageState) {
-    return HomePage();
+    return HomePage(null);
   }
 
 }

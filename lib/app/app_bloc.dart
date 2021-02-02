@@ -1,3 +1,4 @@
+import 'package:findtheword/app/navigator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,33 +8,39 @@ import 'injector.dart';
 
 part 'app_bloc.freezed.dart';
 
-class StartInitialisationEvent {}
+@freezed
+abstract class AppEvent with _$AppEvent {
+  const factory AppEvent.startInitialisation() = AppEventStartInitialisation;
+  const factory AppEvent.goToPage(Object pageState) = AppEventGoToPage;
+}
 
 @freezed
 abstract class AppState with _$AppState {
-  const factory AppState.loading() = AppStateLoading;
-  const factory AppState.initialised(@nullable Object pageState) = AppStateInitialised;
+  const factory AppState.initialising() = AppStateInitialising;
+  const factory AppState.showPage(@nullable Object pageState) = AppStateInitialised;
   const factory AppState.error(String message) = AppStateError;
 }
 
-class AppBloc extends Bloc<StartInitialisationEvent, AppState> {
-  AppBloc() : super(AppState.loading());
+class AppBloc extends Bloc<AppEvent, AppState> {
+  AppBloc() : super(AppState.initialising());
 
   Injector injector;
+
+  FTWNavigator navigator = FTWNavigator();
 
   Future<AppState> _initialise() async {
     try {
       await Firebase.initializeApp();
       await FirebaseAuth.instance.signInAnonymously();
       injector = Injector();
-      return AppState.initialised(null);
+      return AppState.showPage(null);
     } catch (error) {
       return AppState.error(error.toString());
     }
   }
 
   @override
-  Stream<AppState> mapEventToState(StartInitialisationEvent event) async* {
-    yield await _initialise();
+  Stream<AppState> mapEventToState(AppEvent event) {
+    return Stream.fromFuture(_initialise());
   }
 }

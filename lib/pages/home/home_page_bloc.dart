@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:findtheword/data/db_wrapper.dart';
-import 'package:findtheword/data/repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -9,35 +7,36 @@ part 'home_page_bloc.freezed.dart';
 
 @freezed
 abstract class HomePageEvent with _$HomePageEvent {
-  const factory HomePageEvent.loadHomePage() = LoadHomePage;
+  const factory HomePageEvent.textChanged(String playerName, String roomName) = TextChanged;
+  const factory HomePageEvent.joinPressed() = JoinPressed;
 }
+
+enum HomePageAction { GO_TO_NEXT_PAGE }
 
 @freezed
 abstract class HomePageState with _$HomePageState {
-  const factory HomePageState.loading() = LoadingHomePage;
-  const factory HomePageState.error(String message) = ErrorHomePage;
-  const factory HomePageState.homePageData(String userId, List<String> listItems) = HomePageData;
+  factory HomePageState(
+      String playerName,
+      String roomName,
+      bool joinButtonEnabled,
+      {HomePageAction action}
+  ) = _HomePageAction;
 }
 
 class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {
 
-  Repository _repository;
-
-  HomePageBloc(this._repository): super(HomePageState.loading());
+  HomePageBloc(HomePageState initialState): super(initialState);
 
   @override
-  Stream<HomePageState> mapEventToState(HomePageEvent event) {
-    try {
-      return _repository.stream.map((list) =>
-          HomePageData("ciccio", list)
-      ).transform(StreamTransformer.fromHandlers(
-          handleError: (error, stackTrace, sink) {
-            sink.add(HomePageState.error(error.toString()));
-          }
-      ));
-    } catch (e) {
-      return Stream.value(HomePageState.error(e.toString()));
-    }
+  Stream<HomePageState> mapEventToState(HomePageEvent event) async* {
+    yield event.when(
+        textChanged: (playerName, roomName) => HomePageState(
+            playerName,
+            roomName,
+            playerName.isNotEmpty && roomName.isNotEmpty
+        ),
+      joinPressed: () => state.copyWith(action: HomePageAction.GO_TO_NEXT_PAGE)
+    );
   }
 
 

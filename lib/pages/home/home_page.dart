@@ -1,40 +1,89 @@
+
 import 'package:findtheword/app/app_bloc.dart';
 import 'package:findtheword/pages/home/home_page_bloc.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomePage extends StatelessWidget {
+
+  HomePageState _initialState;
+
+  HomePage(this._initialState) {
+    if (_initialState == null) {
+      _initialState = HomePageState("", "", false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<HomePageBloc>(
-      create: (context) => HomePageBloc(BlocProvider.of<AppBloc>(context).injector.repository)..add(HomePageEvent.loadHomePage()),
-      child: Scaffold(
-        appBar: AppBar(title: BlocBuilder<HomePageBloc, HomePageState>(
-          builder: (context, state) => state.when(
-              loading: () => Text("Loading..."),
-              error: (message) => Text("Error"),
-              homePageData: (userId, listItems) => Text(userId)
-          ),
-          buildWhen: (previous, current) {
-            return (current is HomePageData && previous is HomePageData && current.userId != previous.userId)
-              || (current != previous);
-          }
-        )),
-        body: BlocBuilder<HomePageBloc, HomePageState>(
-            builder: (context, state) => state.when(
-                loading: () => Center(child: CircularProgressIndicator()),
-                error: (message) => Center(child: Text(message)),
-                homePageData: (userId, listItems) => ListView(
-                  children: listItems.map((item) => Text(item)).toList(),
-                )
+      create: (context) => HomePageBloc(_initialState),
+      child: Builder(
+        builder: (context) {
+          HomePageBloc bloc = BlocProvider.of(context);
+          TextEditingController playerNameController = TextEditingController(text: _initialState.playerName);
+          TextEditingController roomNameController = TextEditingController(text: _initialState.roomName);
+          Function listener = () {
+            bloc.add(HomePageEvent.textChanged(playerNameController.text, roomNameController.text));
+          };
+          context.watch<AppBloc>().add(AppEvent.startInitialisation());
+          playerNameController.addListener(listener);
+          roomNameController.addListener(listener);
+          return Center(
+            child: Container(
+              constraints: BoxConstraints(maxWidth: 400, maxHeight: 700),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: TextField(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Player Name',
+                        ),
+                      controller: playerNameController,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Room Name',
+                      ),
+                      controller: roomNameController,
+                    ),
+                  ),
+                  Expanded(child: Container()),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: BlocBuilder<HomePageBloc, HomePageState>(
+                        builder: (context, state) => RaisedButton(
+                            onPressed: state.joinButtonEnabled ? () => bloc.add(HomePageEvent.joinPressed()) : null,
+                            child: Text("Join"),
+                        ),
+                      buildWhen: (previous, next) => previous.joinButtonEnabled != next.joinButtonEnabled,
+                    ),
+                  ),
+                  BlocListener<HomePageBloc, HomePageState>(
+                      listener: (context, state) {
+                        if (state.action == HomePageAction.GO_TO_NEXT_PAGE) {
+                          AppBloc appBloc = BlocProvider.of(context);
+                          appBloc.add(
+                              appBloc.navigator.goToJoinRoom(state.playerName, state.roomName)
+                          );
+                        }
+                      },
+                    listenWhen: (previous, next) => next.action != null,
+                    child: Container(),
+                  )
+                ],
+              ),
             ),
-            buildWhen: (previous, current) {
-              return (current is HomePageData && previous is HomePageData && current.listItems != previous.listItems)
-                  || (current != previous);
-            }
-        ),
-      ),
+          );
+        },
+      )
     );
   }
 
