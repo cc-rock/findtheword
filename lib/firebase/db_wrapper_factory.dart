@@ -1,4 +1,4 @@
-import 'package:findtheword/data/db_wrapper.dart';
+import 'package:findtheword/firebase/db_wrapper.dart';
 
 class DbWrapperFactory {
 

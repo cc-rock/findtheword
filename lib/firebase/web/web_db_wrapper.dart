@@ -1,4 +1,4 @@
-import 'package:findtheword/data/db_wrapper.dart';
+import 'package:findtheword/firebase/db_wrapper.dart';
 import 'package:firebase/firebase.dart';
 
 class WebDbWrapper extends DbWrapper {
@@ -10,7 +10,7 @@ class WebDbWrapper extends DbWrapper {
   @override
   Stream<dynamic> onValue(String path) {
     return _db.ref(path).onValue.map((event) {
-      return event.snapshot.val();
+      return convertMaps(event.snapshot.val());
     });
   }
 
@@ -19,7 +19,7 @@ class WebDbWrapper extends DbWrapper {
 
   @override
   Future<dynamic> once(String path) => _db.ref(path).once("value").then(
-          (event) => event.snapshot.val()
+          (event) => convertMaps(event.snapshot.val())
   );
 
   @override

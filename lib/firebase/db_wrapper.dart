@@ -1,3 +1,7 @@
+
+
+import 'package:flutter/foundation.dart';
+
 abstract class DbWrapper {
 
   /*
@@ -14,5 +18,19 @@ abstract class DbWrapper {
   Future<void> update(String parentPath, Map<String, dynamic> updates);
 
   String generateKey(String path);
+
+  @protected
+  dynamic convertMaps(dynamic value) {
+    if (value is Map) {
+      if (value is Map<String, dynamic>) {
+        return value;
+      }
+      return value.map((key, value) => MapEntry((key as String), convertMaps(value)));
+    }
+    if (value is List) {
+      return value.map((v) => convertMaps(v)).toList();
+    }
+    return value;
+  }
 
 }

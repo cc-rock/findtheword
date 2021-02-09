@@ -1,4 +1,4 @@
-import 'package:findtheword/app/navigator.dart';
+import 'package:findtheword/pages/home/home_page_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,14 +26,12 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   Injector injector;
 
-  FTWNavigator navigator = FTWNavigator();
-
   Future<AppState> _initialise() async {
     try {
       await Firebase.initializeApp();
       await FirebaseAuth.instance.signInAnonymously();
       injector = Injector();
-      return AppState.showPage(null);
+      return AppState.showPage(HomePageState("", "", false));
     } catch (error) {
       return AppState.error(error.toString());
     }

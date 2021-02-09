@@ -1,18 +1,13 @@
-
-import 'package:findtheword/app/app_bloc.dart';
+import 'package:findtheword/app/navigation/navigation_cubit.dart';
 import 'package:findtheword/pages/home/home_page_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomePage extends StatelessWidget {
 
-  HomePageState _initialState;
+  final HomePageState _initialState;
 
-  HomePage(this._initialState) {
-    if (_initialState == null) {
-      _initialState = HomePageState("", "", false);
-    }
-  }
+  HomePage(this._initialState);
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +21,6 @@ class HomePage extends StatelessWidget {
           Function listener = () {
             bloc.add(HomePageEvent.textChanged(playerNameController.text, roomNameController.text));
           };
-          context.watch<AppBloc>().add(AppEvent.startInitialisation());
           playerNameController.addListener(listener);
           roomNameController.addListener(listener);
           return Center(
@@ -69,9 +63,8 @@ class HomePage extends StatelessWidget {
                   BlocListener<HomePageBloc, HomePageState>(
                       listener: (context, state) {
                         if (state.action == HomePageAction.GO_TO_NEXT_PAGE) {
-                          AppBloc appBloc = BlocProvider.of(context);
-                          appBloc.add(
-                              appBloc.navigator.goToJoinRoom(state.playerName, state.roomName)
+                          BlocProvider.of<NavigationCubit>(context).goToJoinRoom(
+                              state.playerName, state.roomName
                           );
                         }
                       },

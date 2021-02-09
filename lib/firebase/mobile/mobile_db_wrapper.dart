@@ -11,7 +11,7 @@ class MobileDbWrapper extends DbWrapper {
   @override
   Stream<dynamic> onValue(String path) {
     return _db.reference().child(path).onValue.map((event) {
-      return event.snapshot.value;
+      return convertMaps(event.snapshot.value);
     });
   }
 
@@ -20,7 +20,7 @@ class MobileDbWrapper extends DbWrapper {
 
   @override
   Future<dynamic> once(String path) => _db.reference().child(path).once().then(
-          (snapshot) => snapshot.value
+          (snapshot) => convertMaps(snapshot.value)
   );
 
   @override
