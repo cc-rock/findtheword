@@ -2,6 +2,7 @@ import 'package:findtheword/app/navigation/navigation_cubit.dart';
 import 'package:findtheword/pages/ask_password/ask_password_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:indent/indent.dart';
 
 class AskPasswordPage extends StatelessWidget {
   final AskPasswordState _initialState;
@@ -14,7 +15,7 @@ class AskPasswordPage extends StatelessWidget {
       child: BlocBuilder<AskPasswordBloc, AskPasswordState>(
         builder: (context, state) {
           TextEditingController passwordController = TextEditingController();
-          if (state.password != null) {
+          if (state.goToJoinPage) {
             BlocProvider.of<NavigationCubit>(context).goToJoinRoom(state.playerName, state.roomName, state.password);
             return Container();
           }
@@ -28,7 +29,7 @@ class AskPasswordPage extends StatelessWidget {
                     child: Text('''
                     The room "${state.roomName} requires a password to be joined.
                     Please enter the password below and then press "Continue".
-                    '''),
+                    '''.unindent()),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -40,7 +41,7 @@ class AskPasswordPage extends StatelessWidget {
                   RaisedButton(
                     child: Text("Continue"),
                     onPressed: () {
-                      BlocProvider.of<AskPasswordBloc>(context).add(AskPasswordEvent(passwordController.text));
+                      BlocProvider.of<AskPasswordBloc>(context).add(PasswordEnteredEvent(passwordController.text));
                     }
                   )
                 ],

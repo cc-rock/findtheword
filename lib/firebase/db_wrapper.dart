@@ -22,9 +22,6 @@ abstract class DbWrapper {
   @protected
   dynamic convertMaps(dynamic value) {
     if (value is Map) {
-      if (value is Map<String, dynamic>) {
-        return value;
-      }
       return value.map((key, value) => MapEntry((key as String), convertMaps(value)));
     }
     if (value is List) {

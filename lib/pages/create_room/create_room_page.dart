@@ -1,6 +1,7 @@
 import 'package:findtheword/app/navigation/navigation_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:indent/indent.dart';
 
 import 'create_room_bloc.dart';
 
@@ -26,13 +27,13 @@ class CreateRoomPage extends StatelessWidget {
                       child: Text('''
                     The room "${state.roomName} does not exist yet.
                     Press "Continue" to create it, you will be the game administrator.
-                    '''),
+                    '''.unindent()),
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: CheckboxListTile(
                         title: Text("Require password"),
-                        value: state.passwordEnabled,
+                        value: state.requirePasswordChecked,
                         onChanged: (newValue) {
                           BlocProvider.of<CreateRoomBloc>(context).add(CreateRoomEvent.checkboxClicked(newValue));
                         },
@@ -41,7 +42,7 @@ class CreateRoomPage extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      child: state.passwordEnabled ? TextField(
+                      child: state.passwordFieldEnabled ? TextField(
                         controller: passwordController,
                       ) : FocusScope(
                         node: FocusScopeNode(),
@@ -54,11 +55,23 @@ class CreateRoomPage extends StatelessWidget {
                       ),
                     ),
                     Expanded(child: Container()),
-                    RaisedButton(
-                        child: Text("Continue"),
-                        onPressed: () {
-                          BlocProvider.of<CreateRoomBloc>(context).add(CreateRoomEvent.continueClicked(state.passwordEnabled, passwordController.text));
-                        }
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: RaisedButton(
+                          child: Text("Continue"),
+                          onPressed: () {
+                            BlocProvider.of<CreateRoomBloc>(context).add(CreateRoomEvent.continueClicked(state.requirePasswordChecked, passwordController.text));
+                          }
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: RaisedButton(
+                          child: Text("Start again"),
+                          onPressed: () {
+                            BlocProvider.of<NavigationCubit>(context).goToHomePage(state.playerName, state.roomName);
+                          }
+                      ),
                     )
                   ],
                 );
@@ -73,7 +86,7 @@ class CreateRoomPage extends StatelessWidget {
                       child: Text('''
                         The room "${state.roomName} couldn't be created, an error has occurred.
                         Please try again later.
-                    '''),
+                    '''.unindent()),
                     ),
                     Expanded(child: Container()),
                     RaisedButton(

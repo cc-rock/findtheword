@@ -1,6 +1,7 @@
 import 'package:findtheword/app/navigation/navigation_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:indent/indent.dart';
 
 import 'join_room_bloc.dart';
 
@@ -32,7 +33,7 @@ class JoinRoomPage extends StatelessWidget {
                           '''
                           The room "${request.roomName}" could not be joined, an error has occurred.
                           If you entered a password, it might not be the correct one.
-                          ''',
+                          '''.unindent(),
                           request.password != null
                       ),
                       orElse: () => Container()

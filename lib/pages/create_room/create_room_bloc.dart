@@ -10,13 +10,15 @@ part 'create_room_bloc.g.dart';
 
 @freezed
 abstract class CreateRoomEvent with _$CreateRoomEvent {
-  factory CreateRoomEvent.checkboxClicked(bool requirePassword) = CheckboxClicked;
-  factory CreateRoomEvent.continueClicked(bool requirePassword, String password) = ContinueClicked;
+  factory CreateRoomEvent.checkboxClicked(bool checked) = CheckboxClicked;
+  factory CreateRoomEvent.continueClicked(bool requirePasswordChecked, String password) = ContinueClicked;
 }
 
 @freezed
 abstract class CreateRoomState with _$CreateRoomState {
-  factory CreateRoomState.initial(String playerName, String roomName, bool passwordEnabled) = CreateRoomStateInitial;
+  factory CreateRoomState.initial(
+      String playerName, String roomName, {@Default(false) bool requirePasswordChecked, @Default(false) bool passwordFieldEnabled}
+      ) = CreateRoomStateInitial;
   factory CreateRoomState.loading(String playerName, String roomName) = CreateRoomStateLoading;
   factory CreateRoomState.success(String playerName, String roomName, String gameId) = CreateRoomStateSuccess;
   factory CreateRoomState.error(String playerName, String roomName) = CreateRoomStateError;
@@ -31,12 +33,14 @@ class CreateRoomBloc extends Bloc<CreateRoomEvent, CreateRoomState> {
   @override
   Stream<CreateRoomState> mapEventToState(CreateRoomEvent event) {
     return event.when(
-        checkboxClicked: (requirePassword) async* {
-          yield CreateRoomState.initial(state.playerName, state.roomName, requirePassword);
+        checkboxClicked: (checked) async* {
+          yield CreateRoomState.initial(
+              state.playerName, state.roomName, requirePasswordChecked: checked, passwordFieldEnabled: checked
+          );
         },
-        continueClicked: (requirePassword, password) async* {
+        continueClicked: (requirePasswordChecked, password) async* {
           yield CreateRoomState.loading(state.playerName, state.roomName);
-          var result = await _createRoom.invoke(state.playerName, state.roomName, requirePassword ? password : null);
+          var result = await _createRoom.invoke(state.playerName, state.roomName, requirePasswordChecked ? password : null);
           if (result is ResultSuccess) {
             yield CreateRoomState.success(state.playerName, state.roomName, (result as ResultSuccess).value);
           } else {

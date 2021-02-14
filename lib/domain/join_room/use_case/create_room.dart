@@ -10,7 +10,12 @@ class CreateRoom {
 
   Future<Result<String>> invoke(
           String adminName, String roomName, [String password]) async {
-    String currentUserId = await _userIdRepository.currentUserId;
-    return _roomRepository.createRoom(currentUserId, adminName, roomName, password);
+    try {
+      String currentUserId = await _userIdRepository.currentUserId;
+      String gameId = await _roomRepository.createRoom(currentUserId, adminName, roomName, password);
+      return Result.success(gameId);
+    } catch(e) {
+      return Future.value(Result.error(e));
+    }
   }
 }

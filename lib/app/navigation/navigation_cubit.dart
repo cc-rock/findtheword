@@ -23,7 +23,7 @@ class NavigationCubit extends Cubit<NavigationState> {
   }
 
   void goToCreateRoom(String playerName, String roomName) {
-    emit(NavigationState(CreateRoomState.initial(playerName, roomName, false)));
+    emit(NavigationState(CreateRoomState.initial(playerName, roomName)));
   }
 
   void goToAskPassword(String playerName, String roomName) {

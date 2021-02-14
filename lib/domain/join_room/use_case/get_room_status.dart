@@ -9,6 +9,13 @@ class GetRoomStatus {
 
   GetRoomStatus(this._repository);
 
-  Future<Result<RoomStatus>> invoke(String roomName) => _repository.getRoomStatus(roomName);
+  Future<Result<RoomStatus>> invoke(String roomName) async {
+    try {
+      RoomStatus status = await _repository.getRoomStatus(roomName);
+      return Result.success(status);
+    } catch (e) {
+      return Result.error(e);
+    }
+  }
 
 }

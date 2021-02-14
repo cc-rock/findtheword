@@ -1,7 +1,6 @@
 import 'package:findtheword/data/converter/room_converters.dart';
 import 'package:findtheword/data/dto/room_dtos.dart';
 import 'package:findtheword/domain/common/player.dart';
-import 'package:findtheword/domain/common/result.dart';
 import 'package:findtheword/domain/join_room/room_repository.dart';
 import 'package:findtheword/domain/join_room/room_status.dart';
 import 'package:findtheword/firebase/db_wrapper.dart';
@@ -13,7 +12,7 @@ class RoomRepositoryImpl implements RoomRepository {
   RoomRepositoryImpl(this._dbWrapper);
 
   @override
-  Future<Result<String>> createRoom(String adminUserId, String adminName, String roomName, [String password]) {
+  Future<String> createRoom(String adminUserId, String adminName, String roomName, [String password]) {
     String gameId = _dbWrapper.generateKey("/games");
     return _dbWrapper.set("/rooms/$roomName", RoomDTO(
       gameId,
@@ -21,7 +20,7 @@ class RoomRepositoryImpl implements RoomRepository {
       password,
       {adminUserId: PlayerDTO(adminName, DateTime.now().millisecondsSinceEpoch, password), },
       RoomPublicInfoDTO(RoomStatusDTO.open, password != null)
-    ).toJson()).catchError((error) => Result.error(error)).then((_) => Result.success(gameId));
+    ).toJson()).then((_) => gameId);
   }
 
   @override
@@ -33,25 +32,25 @@ class RoomRepositoryImpl implements RoomRepository {
   }
 
   @override
-  Future<Result<RoomStatus>> getRoomStatus(String roomName) {
+  Future<RoomStatus> getRoomStatus(String roomName) {
     return _dbWrapper.once("/rooms/$roomName/public").then((value) {
       if (value == null) {
-        return Result.success(RoomStatus.nonExistent);
+        return RoomStatus.nonExistent;
       }
       try {
-        return Result.success(roomStatusFromDTO(RoomPublicInfoDTO.fromJson(value)));
+        return roomStatusFromDTO(RoomPublicInfoDTO.fromJson(value));
       } catch (exception) {
-        return Result.error(Exception("Invalid DB data."));
+        throw Exception("Invalid DB data: ${exception.toString()}");
       }
     });
   }
 
   @override
-  Future<Result<void>> joinRoom(String playerUserId, String playerName, String roomName, [String password]) {
+  Future<void> joinRoom(String playerUserId, String playerName, String roomName, [String password]) {
     return _dbWrapper.set(
         "/rooms/$roomName/players/$playerUserId",
         PlayerDTO(playerName, DateTime.now().millisecondsSinceEpoch, password).toJson()
-    ).then((_) => Result.success("")).catchError((error) => Result.error(error));
+    );
   }
 
 }
