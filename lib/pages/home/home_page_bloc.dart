@@ -20,7 +20,7 @@ abstract class HomePageState with _$HomePageState {
       String roomName,
       bool joinButtonEnabled,
       {HomePageAction action}
-  ) = _HomePageAction;
+  ) = _HomePageState;
 }
 
 class HomePageBloc extends Bloc<HomePageEvent, HomePageState> {

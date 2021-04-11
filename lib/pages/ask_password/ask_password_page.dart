@@ -27,7 +27,7 @@ class AskPasswordPage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text('''
-                    The room "${state.roomName} requires a password to be joined.
+                    The room "${state.roomName}" requires a password to be joined.
                     Please enter the password below and then press "Continue".
                     '''.unindent()),
                   ),

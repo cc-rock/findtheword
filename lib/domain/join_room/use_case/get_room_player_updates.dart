@@ -1,11 +1,11 @@
-import 'package:findtheword/domain/common/player.dart';
 import 'package:findtheword/domain/join_room/room_repository.dart';
+import '../room.dart';
 
-class GetRoomPlayerUpdates {
+class GetRoomUpdates {
   final RoomRepository _roomRepository;
-  GetRoomPlayerUpdates(this._roomRepository);
+  GetRoomUpdates(this._roomRepository);
 
-  Stream<List<Player>> invoke(String roomName) {
-    return _roomRepository.getRoomPlayersUpdates(roomName);
+  Stream<Room> invoke(String roomName) {
+    return _roomRepository.getRoomUpdates(roomName);
   }
 }

@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:findtheword/domain/common/result.dart';
-import 'package:findtheword/domain/join_room/room_status.dart';
+import 'package:findtheword/domain/join_room/room.dart';
 import 'package:findtheword/domain/join_room/use_case/get_room_status.dart';
 import 'package:findtheword/domain/join_room/use_case/join_room.dart';
 import 'package:findtheword/pages/join_room/join_room_bloc.dart';

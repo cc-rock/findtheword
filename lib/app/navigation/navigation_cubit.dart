@@ -31,7 +31,11 @@ class NavigationCubit extends Cubit<NavigationState> {
   }
 
   void goToWaitForPlayers(String roomName) {
-    emit(NavigationState(WaitForPlayersState(roomName, [], false)));
+    emit(NavigationState(WaitForPlayersState(roomName, false, [], false)));
+  }
+
+  void goToGameSettings(String roomName) {
+
   }
 
 }

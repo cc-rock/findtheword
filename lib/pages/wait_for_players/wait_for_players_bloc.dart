@@ -1,6 +1,8 @@
 import 'package:findtheword/app/injector.dart';
 import 'package:findtheword/domain/common/player.dart';
+import 'package:findtheword/domain/join_room/use_case/am_i_room_admin.dart';
 import 'package:findtheword/domain/join_room/use_case/get_room_player_updates.dart';
+import 'package:findtheword/domain/join_room/use_case/is_room_complete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -16,29 +18,40 @@ abstract class WaitForPlayersEvent with _$WaitForPlayersEvent {
 
 @freezed
 abstract class WaitForPlayersState with _$WaitForPlayersState {
-  factory WaitForPlayersState(String roomName, List<Player> players, bool readyToStart) = _WaitForPlayersState;
+  factory WaitForPlayersState(String roomName, bool admin, List<Player> players, bool readyToStart) = _WaitForPlayersState;
   factory WaitForPlayersState.fromJson(Map<String, dynamic> json) => _$WaitForPlayersStateFromJson(json);
 }
 
 class WaitForPlayersBloc extends Bloc<WaitForPlayersEvent, WaitForPlayersState> {
-  final GetRoomPlayerUpdates _getRoomPlayerUpdates;
-  WaitForPlayersBloc(WaitForPlayersState initialState, this._getRoomPlayerUpdates) : super(initialState) {
+  final GetRoomUpdates _getRoomUpdates;
+  final AmIRoomAdmin _amIRoomAdmin;
+  final IsRoomComplete _isRoomComplete;
+
+  WaitForPlayersBloc(
+      WaitForPlayersState initialState, this._getRoomUpdates, this._amIRoomAdmin, this._isRoomComplete
+  ): super(initialState) {
     add(WaitForPlayersEvent.start());
   }
 
   @override
-  Stream<WaitForPlayersState> mapEventToState(WaitForPlayersEvent event) {
-    return event.when(
-        start: () => _getRoomPlayerUpdates.invoke(state.roomName).map(
-            (value) => WaitForPlayersState(state.roomName, value, false)
-        ),
-        continueClicked: () => Stream.fromFuture(Future.value(state.copyWith(readyToStart: true)))
+  Stream<WaitForPlayersState> mapEventToState(WaitForPlayersEvent event) async* {
+    bool admin = (await _amIRoomAdmin.invoke(state.roomName)).when(
+        success: (value) => value,
+        error: (error) => false
     );
+    if (event is Start) {
+      yield* _getRoomUpdates.invoke(state.roomName).map(
+              (value) =>
+              WaitForPlayersState(state.roomName, admin, value.players, _isRoomComplete.invoke(value))
+      );
+    } else if (event is ContinueClicked) {
+      yield state.copyWith(readyToStart: true);
+    }
   }
 
   factory WaitForPlayersBloc.fromContext(BuildContext context, WaitForPlayersState initialState) {
     Injector injector = context.read();
-    return WaitForPlayersBloc(initialState, injector.getRoomPlayerUpdates);
+    return WaitForPlayersBloc(initialState, injector.getRoomPlayerUpdates, injector.amIRoomAdmin, injector.isRoomComplete);
   }
 
 }

@@ -1,6 +1,6 @@
 import 'package:findtheword/domain/common/result.dart';
 import 'package:findtheword/domain/join_room/room_repository.dart';
-import 'package:findtheword/domain/join_room/room_status.dart';
+import 'package:findtheword/domain/join_room/room.dart';
 import 'package:findtheword/domain/join_room/use_case/get_room_status.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';

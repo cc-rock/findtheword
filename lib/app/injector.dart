@@ -2,9 +2,11 @@ import 'package:findtheword/data/room_repository_impl.dart';
 import 'package:findtheword/data/user_id_repository_impl.dart';
 import 'package:findtheword/domain/common/user_id_repository.dart';
 import 'package:findtheword/domain/join_room/room_repository.dart';
+import 'package:findtheword/domain/join_room/use_case/am_i_room_admin.dart';
 import 'package:findtheword/domain/join_room/use_case/create_room.dart';
 import 'package:findtheword/domain/join_room/use_case/get_room_player_updates.dart';
 import 'package:findtheword/domain/join_room/use_case/get_room_status.dart';
+import 'package:findtheword/domain/join_room/use_case/is_room_complete.dart';
 import 'package:findtheword/domain/join_room/use_case/join_room.dart';
 import 'package:findtheword/firebase/db_wrapper.dart';
 import 'package:findtheword/firebase/db_wrapper_factory.dart'
@@ -28,7 +30,11 @@ class Injector {
 
   CreateRoom get createRoom => _getCached(() => CreateRoom(roomRepository, userIdRepository));
 
-  GetRoomPlayerUpdates get getRoomPlayerUpdates => _getCached(() => GetRoomPlayerUpdates(roomRepository));
+  GetRoomUpdates get getRoomPlayerUpdates => _getCached(() => GetRoomUpdates(roomRepository));
+
+  AmIRoomAdmin get amIRoomAdmin => _getCached(() => AmIRoomAdmin(userIdRepository, roomRepository));
+
+  IsRoomComplete get isRoomComplete => _getCached(() => IsRoomComplete());
 
   T _getCached<T>(T Function() factory, [String dependencyName = ""]) {
     var key = "${T.toString()}_$dependencyName";

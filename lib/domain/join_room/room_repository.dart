@@ -1,6 +1,4 @@
-import 'package:findtheword/domain/common/player.dart';
-import 'package:findtheword/domain/common/result.dart';
-import 'package:findtheword/domain/join_room/room_status.dart';
+import 'package:findtheword/domain/join_room/room.dart';
 
 abstract class RoomRepository {
 
@@ -11,6 +9,8 @@ abstract class RoomRepository {
   /// Creates a new room with the provided user id as the admin, and returns a game id.
   Future<String> createRoom(String adminUserId, String adminName, String roomName, [String password]);
 
-  Stream<List<Player>> getRoomPlayersUpdates(String roomName);
+  Stream<Room> getRoomUpdates(String roomName);
+
+  Future<String> getRoomAdminId(String roomName);
 
 }
