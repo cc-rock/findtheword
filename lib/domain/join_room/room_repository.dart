@@ -4,6 +4,8 @@ abstract class RoomRepository {
 
   Future<RoomStatus> getRoomStatus(String roomName);
 
+  Future<void> setRoomUnavailable(String roomName);
+
   Future<void> joinRoom(String playerUserId, String playerName, String roomName, [String password]);
 
   /// Creates a new room with the provided user id as the admin, and returns a game id.

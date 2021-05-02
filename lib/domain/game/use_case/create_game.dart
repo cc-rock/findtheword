@@ -1,16 +1,20 @@
 import 'package:findtheword/domain/common/player.dart';
 import 'package:findtheword/domain/common/result.dart';
-import 'package:findtheword/domain/game/game.dart';
+import 'package:findtheword/domain/common/user_id_repository.dart';
 import 'package:findtheword/domain/game/game_repository.dart';
+import 'package:findtheword/domain/game/use_case/get_default_settings.dart';
 
 class CreateGame {
   GameRepository _gameRepository;
+  GetDefaultSettings _getDefaultSettings;
+  UserIdRepository _userIdRepository;
 
-  CreateGame(this._gameRepository);
+  CreateGame(this._gameRepository, this._getDefaultSettings);
 
-  Future<Result<void>> invoke(String gameId, String roomName, String adminId, List<Player> players, GameSettings settings) async {
+  Future<Result<void>> invoke(String gameId, String roomName, List<Player> players) async {
     try {
-      await _gameRepository.createGame(gameId, roomName, adminId, players, settings);
+      String adminId = await _userIdRepository.currentUserId;
+      await _gameRepository.createGame(gameId, roomName, adminId, players, _getDefaultSettings.invoke());
       return Result.success("");
     } catch (error) {
       return Result.error(error);

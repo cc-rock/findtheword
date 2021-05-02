@@ -5,7 +5,7 @@ import '../room.dart';
 
 class GetRoomStatus {
 
-  RoomRepository _repository;
+  final RoomRepository _repository;
 
   GetRoomStatus(this._repository);
 

@@ -1,5 +1,6 @@
 import 'package:findtheword/pages/ask_password/ask_password_bloc.dart';
 import 'package:findtheword/pages/create_room/create_room_bloc.dart';
+import 'package:findtheword/pages/game/game_settings/game_settings_bloc.dart';
 import 'package:findtheword/pages/home/home_page_bloc.dart';
 import 'package:findtheword/pages/join_room/join_room_bloc.dart';
 import 'package:findtheword/pages/wait_for_players/wait_for_players_bloc.dart';
@@ -31,11 +32,11 @@ class NavigationCubit extends Cubit<NavigationState> {
   }
 
   void goToWaitForPlayers(String roomName) {
-    emit(NavigationState(WaitForPlayersState(roomName, false, [], false)));
+    emit(NavigationState(WaitForPlayersState(roomName, null, false, [], false)));
   }
 
-  void goToGameSettings(String roomName) {
-
+  void goToGameSettings(String gameId) {
+    emit(NavigationState(GameSettingsState(gameId, false)));
   }
 
 }

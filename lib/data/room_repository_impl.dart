@@ -28,14 +28,19 @@ class RoomRepositoryImpl implements RoomRepository {
   @override
   Stream<Room> getRoomUpdates(String roomName) {
     return _dbWrapper.onValue("rooms/$roomName").map((dbValue) {
-      Map<String, PlayerDTO> converted = (dbValue["players"] as Map<String, dynamic>).map((key, value) => MapEntry(key, PlayerDTO.fromJson(value)));
-      return Room(roomName, playersFromDTOs(converted, dbValue["admin"]), _roomStatusFromDbValue(dbValue["public"]));
+      RoomDTO roomDTO = RoomDTO.fromJson(dbValue);
+      return Room(roomName, roomDTO.gameId, playersFromDTOs(roomDTO.players, roomDTO.admin), _roomStatusFromDbValue(dbValue["public"]));
     });
   }
 
   @override
   Future<RoomStatus> getRoomStatus(String roomName) {
     return _dbWrapper.once("/rooms/$roomName/public").then(_roomStatusFromDbValue);
+  }
+
+  @override
+  Future<void> setRoomUnavailable(String roomName) {
+    return _dbWrapper.set("/rooms/$roomName/public/status", RoomStatusDTO.closed);
   }
 
   @override

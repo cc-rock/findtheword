@@ -6,7 +6,7 @@ part 'room.g.dart';
 
 @freezed
 abstract class Room with _$Room {
-  factory Room(String name, List<Player> players, RoomStatus status) = _Room;
+  factory Room(String name, String gameId, List<Player> players, RoomStatus status) = _Room;
   factory Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
 }
 

@@ -3,8 +3,8 @@ import 'package:findtheword/domain/common/user_id_repository.dart';
 import 'package:findtheword/domain/join_room/room_repository.dart';
 
 class JoinRoom {
-  UserIdRepository _userIdRepository;
-  RoomRepository _roomRepository;
+  final UserIdRepository _userIdRepository;
+  final RoomRepository _roomRepository;
 
   JoinRoom(this._userIdRepository, this._roomRepository);
 
