@@ -1,10 +1,10 @@
 import 'package:findtheword/app/injector.dart';
+import 'package:findtheword/domain/game/game.dart';
 import 'package:findtheword/domain/game/use_case/add_category.dart';
 import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
 import 'package:findtheword/domain/game/use_case/change_settings.dart';
 import 'package:findtheword/domain/game/use_case/delete_category.dart';
 import 'package:findtheword/domain/game/use_case/get_categories_updates.dart';
-import 'package:findtheword/domain/game/use_case/get_default_settings.dart';
 import 'package:findtheword/domain/game/use_case/get_game_settings_updates.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -34,7 +34,10 @@ abstract class GameSettingsState with _$GameSettingsState {
       @Default("") String durationText,
       @Default(false) bool durationIsValid,
       @Default(false) bool finishWhenFirstFinishes,
-      @Default(false) bool goToFirstRound]
+      @Default(false) bool startButtonEnabled,
+      @Default(false) bool goToFirstRound,
+      @Default(false) bool error,
+      GameSettings settings]
   ) = _GameSettingsState;
   factory GameSettingsState.fromJson(Map<String, dynamic> json) => _$GameSettingsStateFromJson(json);
 }
@@ -43,19 +46,19 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
   AmIGameAdmin _amIGameAdmin;
   AddCategory _addCategory;
   DeleteCategory _deleteCategory;
-  GetDefaultSettings _getDefaultSettings;
   ChangeSettings _changeSettings;
   GetCategoriesUpdates _getCategoriesUpdates;
   GetGameSettingsUpdates _getGameSettingsUpdates;
 
   bool _durationValidationStarted = false;
 
+  RegExp _durationRegExp = RegExp(r"^(\d+):(\d\d)$");
+
   GameSettingsBloc(
       GameSettingsState initialsState,
       this._amIGameAdmin,
       this._addCategory,
       this._deleteCategory,
-      this._getDefaultSettings,
       this._changeSettings,
       this._getCategoriesUpdates,
       this._getGameSettingsUpdates): super(initialsState) {
@@ -64,22 +67,75 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
   }
 
   @override
-  Stream<GameSettingsState> mapEventToState(GameSettingsEvent event) async* {
-    if (event is StartLoading) {
-      bool admin = (await _amIGameAdmin.invoke(state.gameId)).when(
-          success: (value) => value,
-          error: (error) => false
-      );
-      yield state.copyWith(admin: admin);
-      yield* _getGameSettingsUpdates.invoke(state.gameId).combineLatest(
-          _getCategoriesUpdates.invoke(state.gameId),
-          (settings, cats) => state.copyWith(
-            categories: cats,
-            finishWhenFirstFinishes: settings.finishWhenFirstPlayerFinishes,
-            durationText: _formatDuration(settings.roundDurationSeconds)
-          )
-      );
+  Stream<GameSettingsState> mapEventToState(GameSettingsEvent event) {
+    try {
+      return event.when(
+          startLoading: () async* {
+            bool admin = (await _amIGameAdmin.invoke(state.gameId)).when(
+                success: (value) => value,
+                error: (error) => false
+            );
+            yield state.copyWith(admin: admin);
+            yield* _getGameSettingsUpdates.invoke(state.gameId).combineLatest(
+                _getCategoriesUpdates.invoke(state.gameId), (settings, cats) =>
+                state.copyWith(
+                    categories: cats,
+                    finishWhenFirstFinishes: settings.finishWhenFirstPlayerFinishes,
+                    durationText: _formatDuration(settings.roundDurationSeconds),
+                    settings: settings,
+                    startButtonEnabled: cats != null && !cats.isEmpty()
+                )
+            );
+          },
+          addedCategory: (newCategory) async* {
+            yield await _addCategory.invoke(state.gameId, newCategory);
+          },
+          deletedCategory: (deletedCategory) async* {
+            yield await _deleteCategory.invoke(state.gameId, deletedCategory);
+          },
+          durationChanged: (newDurationText) async* {
+            if (_durationValidationStarted) {
+              int durationSeconds = _parseDuration(newDurationText);
+              if (durationSeconds != null) {
+                await _changeSettings.invoke(state.gameId, state.settings.copyWith(roundDurationSeconds: durationSeconds));
+                yield state.copyWith(
+                    durationIsValid: true,
+                    durationText: newDurationText
+                );
+              } else {
+                yield state.copyWith(
+                    durationIsValid: false
+                );
+              }
+            }
+          },
+          durationLostFocus: () async* {
+            _durationValidationStarted = true;
+          },
+          finishModeCheckboxClicked: (isChecked) async* {
+            await _changeSettings.invoke(state.gameId, state.settings.copyWith(finishWhenFirstPlayerFinishes: isChecked));
+            yield state.copyWith(
+                finishWhenFirstFinishes: isChecked
+            );
+          },
+          startClicked: () async* {
+            yield state.copyWith(goToFirstRound: true);
+          });
+    } catch (error) {
+      return Stream.value(state.copyWith(error: true));
     }
+  }
+  
+  String _formatDuration(int durationSeconds) {
+    return "${(durationSeconds /~ 60)}:${durationSeconds.remainder(60)}";
+  }
+
+  int _parseDuration(String durationText) {
+    RegExpMatch match = _durationRegExp.firstMatch(durationText);
+    if (match == null) {
+      return null;
+    }
+    return int.parse(match.group(0)) * 60 + int.parse(match.group(1));
   }
 
   factory GameSettingsBloc.fromContext(BuildContext context, GameSettingsState initialState) {
@@ -89,7 +145,6 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
         injector.amIGameAdmin,
         injector.addCategory,
         injector.deleteCategory,
-        injector.getDefaultSettings,
         injector.changeSettings,
         injector.getCategoriesUpdates,
         injector.getGameSettingsUpdates);
