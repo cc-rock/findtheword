@@ -9,7 +9,7 @@ class CreateGame {
   GetDefaultSettings _getDefaultSettings;
   UserIdRepository _userIdRepository;
 
-  CreateGame(this._gameRepository, this._getDefaultSettings);
+  CreateGame(this._gameRepository, this._getDefaultSettings, this._userIdRepository);
 
   Future<Result<void>> invoke(String gameId, String roomName, List<Player> players) async {
     try {

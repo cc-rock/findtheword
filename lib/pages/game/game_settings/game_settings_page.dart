@@ -12,16 +12,16 @@ class GameSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<GameSettingsBloc>(
         create: (context) => GameSettingsBloc.fromContext(context, _initialState),
-        child: Builder(
-          builder: (context) {
-            GameSettingsBloc bloc = BlocProvider.of(context);
-            return Center(
-              child: Container(
-                constraints: BoxConstraints(maxWidth: 400, maxHeight: 700),
-                child: Container()
-              ),
-            );
-          },
+        child: Center(
+          child: Container(
+              constraints: BoxConstraints(maxWidth: 400, maxHeight: 700),
+              child: Column(
+                children: [
+                  Text("Game Settings"),
+                  Expanded(child: Container())
+                ],
+              )
+          ),
         )
     );
   }

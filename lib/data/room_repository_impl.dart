@@ -40,7 +40,7 @@ class RoomRepositoryImpl implements RoomRepository {
 
   @override
   Future<void> setRoomUnavailable(String roomName) {
-    return _dbWrapper.set("/rooms/$roomName/public/status", RoomStatusDTO.closed);
+    return _dbWrapper.set("/rooms/$roomName/public/status", RoomStatusDTO.closed.toString().split(".").last);
   }
 
   @override

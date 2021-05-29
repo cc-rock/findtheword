@@ -61,7 +61,7 @@ class Injector {
 
   GetGameSettingsUpdates get getGameSettingsUpdates => _getCached(() => GetGameSettingsUpdates(gameRepository));
 
-  CreateGame get createGame => _getCached(() => CreateGame(gameRepository, getDefaultSettings));
+  CreateGame get createGame => _getCached(() => CreateGame(gameRepository, getDefaultSettings, userIdRepository));
 
   AmIGameAdmin get amIGameAdmin => _getCached(() => AmIGameAdmin(userIdRepository, gameRepository));
 

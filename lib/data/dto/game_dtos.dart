@@ -7,15 +7,16 @@ part 'game_dtos.g.dart';
 
 @freezed
 abstract class GameDTO with _$GameDTO {
+  @JsonSerializable(explicitToJson: true)
   factory GameDTO(
-      String roomName,
+      @JsonKey(name: "room_name") String roomName,
       Map<String, PlayerDTO> players,
       String admin,
       List<String> categories,
       GameSettingsDTO settings,
-      @nullable UpcomingRoundDTO upcomingRound,
+      @nullable @JsonKey(name: "upcoming_round") UpcomingRoundDTO upcomingRound,
       Map<String, Map<String, Map<String, WordDTO>>> rounds,
-      String availableLetters
+      @JsonKey(name: "available_letters") String availableLetters
   ) = _GameDTO;
   factory GameDTO.fromJson(Map<String, dynamic> json) => _$GameDTOFromJson(json);
 }

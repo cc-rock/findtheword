@@ -64,6 +64,7 @@ class WaitForPlayersPage extends StatelessWidget {
                   }
                 },
                 listenWhen: (previous, next) => next.readyToStart,
+                child: Container(),
               )
             ],
           ),

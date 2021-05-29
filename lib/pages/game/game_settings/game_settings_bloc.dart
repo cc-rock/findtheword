@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:findtheword/app/injector.dart';
+import 'package:findtheword/domain/common/result.dart';
 import 'package:findtheword/domain/game/game.dart';
 import 'package:findtheword/domain/game/use_case/add_category.dart';
 import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
@@ -9,7 +12,6 @@ import 'package:findtheword/domain/game/use_case/get_game_settings_updates.dart'
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:stream_transform/stream_transform.dart';
 
 part 'game_settings_bloc.freezed.dart';
 part 'game_settings_bloc.g.dart';
@@ -23,6 +25,8 @@ abstract class GameSettingsEvent with _$GameSettingsEvent {
   factory GameSettingsEvent.finishModeCheckboxClicked(bool checked) = CheckboxClicked;
   factory GameSettingsEvent.startClicked() = StartClicked;
   factory GameSettingsEvent.startLoading() = StartLoading;
+  factory GameSettingsEvent.settingsUpdateReceived(GameSettings settings) = SettingsUpdateReceived;
+  factory GameSettingsEvent.categoriesUpdateReceived(List<String> categories) = CategoriesUpdateReceived;
 }
 
 @freezed
@@ -54,6 +58,9 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
 
   RegExp _durationRegExp = RegExp(r"^(\d+):(\d\d)$");
 
+  StreamSubscription _settingsSubscription;
+  StreamSubscription _categoriesSubscription;
+
   GameSettingsBloc(
       GameSettingsState initialsState,
       this._amIGameAdmin,
@@ -66,6 +73,14 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
     add(GameSettingsEvent.startLoading());
   }
 
+
+  @override
+  Future<Function> close() {
+    _settingsSubscription?.cancel();
+    _categoriesSubscription?.cancel();
+    return super.close();
+  }
+
   @override
   Stream<GameSettingsState> mapEventToState(GameSettingsEvent event) {
     try {
@@ -76,22 +91,20 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
                 error: (error) => false
             );
             yield state.copyWith(admin: admin);
-            yield* _getGameSettingsUpdates.invoke(state.gameId).combineLatest(
-                _getCategoriesUpdates.invoke(state.gameId), (settings, cats) =>
-                state.copyWith(
-                    categories: cats,
-                    finishWhenFirstFinishes: settings.finishWhenFirstPlayerFinishes,
-                    durationText: _formatDuration(settings.roundDurationSeconds),
-                    settings: settings,
-                    startButtonEnabled: cats != null && !cats.isEmpty()
-                )
-            );
+            _settingsSubscription = _getGameSettingsUpdates.invoke(state.gameId).listen((settings) {
+              add(GameSettingsEvent.settingsUpdateReceived(settings));
+            });
+            _categoriesSubscription = _getCategoriesUpdates.invoke(state.gameId).listen((cats) {
+              add(GameSettingsEvent.categoriesUpdateReceived(cats));
+            });
           },
           addedCategory: (newCategory) async* {
-            yield await _addCategory.invoke(state.gameId, newCategory);
+            final result = await _addCategory.invoke(state.gameId, newCategory);
+            yield state.copyWith(error: result is ResultError);
           },
           deletedCategory: (deletedCategory) async* {
-            yield await _deleteCategory.invoke(state.gameId, deletedCategory);
+            final result = await _deleteCategory.invoke(state.gameId, deletedCategory);
+            yield state.copyWith(error: result is ResultError);
           },
           durationChanged: (newDurationText) async* {
             if (_durationValidationStarted) {
@@ -100,11 +113,13 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
                 await _changeSettings.invoke(state.gameId, state.settings.copyWith(roundDurationSeconds: durationSeconds));
                 yield state.copyWith(
                     durationIsValid: true,
-                    durationText: newDurationText
+                    durationText: newDurationText,
+                    error: false
                 );
               } else {
                 yield state.copyWith(
-                    durationIsValid: false
+                    durationIsValid: false,
+                    error: false
                 );
               }
             }
@@ -115,7 +130,21 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
           finishModeCheckboxClicked: (isChecked) async* {
             await _changeSettings.invoke(state.gameId, state.settings.copyWith(finishWhenFirstPlayerFinishes: isChecked));
             yield state.copyWith(
-                finishWhenFirstFinishes: isChecked
+                finishWhenFirstFinishes: isChecked,
+                error: false
+            );
+          },
+          settingsUpdateReceived: (settings) async* {
+            yield state.copyWith(
+                finishWhenFirstFinishes: settings.finishWhenFirstPlayerFinishes,
+                durationText: _formatDuration(settings.roundDurationSeconds),
+                settings: settings
+            );
+          },
+          categoriesUpdateReceived: (cats) async* {
+            state.copyWith(
+                categories: cats,
+                startButtonEnabled: cats != null && cats.isNotEmpty
             );
           },
           startClicked: () async* {
