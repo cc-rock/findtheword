@@ -35,7 +35,7 @@ class CreateRoomPage extends StatelessWidget {
                         title: Text("Require password"),
                         value: state.requirePasswordChecked,
                         onChanged: (newValue) {
-                          BlocProvider.of<CreateRoomBloc>(context).add(CreateRoomEvent.checkboxClicked(newValue));
+                          BlocProvider.of<CreateRoomBloc>(context).add(CreateRoomEvent.checkboxClicked(newValue ?? false));
                         },
                         controlAffinity: ListTileControlAffinity.leading,
                       ),
@@ -48,7 +48,7 @@ class CreateRoomPage extends StatelessWidget {
                         node: FocusScopeNode(),
                           child: TextField(
                             controller: passwordController,
-                            style: Theme.of(context).textTheme.subtitle1.copyWith(
+                            style: Theme.of(context).textTheme.subtitle1?.copyWith(
                               color: Theme.of(context).disabledColor,
                             ),
                           )

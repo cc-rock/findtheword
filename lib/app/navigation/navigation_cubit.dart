@@ -19,7 +19,7 @@ class NavigationCubit extends Cubit<NavigationState> {
     emit(NavigationState(HomePageState(playerName, roomName, (roomName.isNotEmpty && playerName.isNotEmpty))));
   }
 
-  void goToJoinRoom(String playerName, String roomName, [String password]) {
+  void goToJoinRoom(String playerName, String roomName, [String? password]) {
     emit(NavigationState(JoinRoomState.loading(JoinRoomRequest(playerName, roomName, password))));
   }
 

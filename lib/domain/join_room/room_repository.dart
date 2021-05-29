@@ -6,10 +6,10 @@ abstract class RoomRepository {
 
   Future<void> setRoomUnavailable(String roomName);
 
-  Future<void> joinRoom(String playerUserId, String playerName, String roomName, [String password]);
+  Future<void> joinRoom(String playerUserId, String playerName, String roomName, [String? password]);
 
   /// Creates a new room with the provided user id as the admin, and returns a game id.
-  Future<String> createRoom(String adminUserId, String adminName, String roomName, [String password]);
+  Future<String> createRoom(String adminUserId, String adminName, String roomName, [String? password]);
 
   Stream<Room> getRoomUpdates(String roomName);
 

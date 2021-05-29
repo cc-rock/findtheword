@@ -30,12 +30,12 @@ class GameRepositoryImpl implements GameRepository {
 
   @override
   Future<List<String>> getCategories(String gameId) {
-    return _dbWrapper.once("games/$gameId/categories");
+    return _dbWrapper.once("games/$gameId/categories") as Future<List<String>>;
   }
 
   @override
   Stream<List<String>> getCategoriesUpdates(String gameId) {
-    return _dbWrapper.onValue("games/$gameId/categories");
+    return _dbWrapper.onValue("games/$gameId/categories") as Stream<List<String>>;
   }
 
   @override

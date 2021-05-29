@@ -10,7 +10,7 @@ class JoinRoom {
 
   Future<Result<void>> invoke(
           String playerName,
-          String roomName, [String password]) async {
+          String roomName, [String? password]) async {
     try {
       String currentUserId = await _userIdRepository.currentUserId;
       await _roomRepository.joinRoom(currentUserId, playerName, roomName, password);

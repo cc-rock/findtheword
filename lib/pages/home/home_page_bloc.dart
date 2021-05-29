@@ -19,7 +19,7 @@ abstract class HomePageState with _$HomePageState {
       String playerName,
       String roomName,
       bool joinButtonEnabled,
-      {HomePageAction action}
+      {HomePageAction? action}
   ) = _HomePageState;
 }
 

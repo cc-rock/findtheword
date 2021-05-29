@@ -24,7 +24,7 @@ abstract class WaitForPlayersEvent with _$WaitForPlayersEvent {
 
 @freezed
 abstract class WaitForPlayersState with _$WaitForPlayersState {
-  factory WaitForPlayersState(String roomName, @nullable String gameId, bool admin, List<Player> players, bool readyToStart) = _WaitForPlayersState;
+  factory WaitForPlayersState(String roomName, String? gameId, bool admin, List<Player> players, bool readyToStart) = _WaitForPlayersState;
   factory WaitForPlayersState.fromJson(Map<String, dynamic> json) => _$WaitForPlayersStateFromJson(json);
 }
 
@@ -35,7 +35,7 @@ class WaitForPlayersBloc extends Bloc<WaitForPlayersEvent, WaitForPlayersState> 
   final CreateGame _createGame;
   final SetRoomUnavailable _setRoomUnavailable;
 
-  StreamSubscription _subscription;
+  StreamSubscription? _subscription;
 
   WaitForPlayersBloc(
       WaitForPlayersState initialState, this._getRoomUpdates,
@@ -46,7 +46,7 @@ class WaitForPlayersBloc extends Bloc<WaitForPlayersEvent, WaitForPlayersState> 
   }
 
   @override
-  Future<Function> close() {
+  Future<void> close() {
     _subscription?.cancel();
     return super.close();
   }
@@ -61,8 +61,8 @@ class WaitForPlayersBloc extends Bloc<WaitForPlayersEvent, WaitForPlayersState> 
       _subscription = _getRoomUpdates.invoke(state.roomName).listen((room) {
         add(WaitForPlayersEvent.updateReceived(room));
       });
-    } else if (event is ContinueClicked) {
-      await _createGame.invoke(state.gameId, state.roomName, state.players);
+    } else if (event is ContinueClicked && state.gameId != null) {
+      await _createGame.invoke(state.gameId!, state.roomName, state.players);
       await _setRoomUnavailable.invoke(state.roomName);
     } else if (event is UpdateReceived) {
       yield WaitForPlayersState(state.roomName, event.room.gameId, admin, event.room.players, _isRoomComplete.invoke(event.room));

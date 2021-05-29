@@ -12,7 +12,7 @@ part 'join_room_bloc.g.dart';
 
 @freezed
 abstract class JoinRoomRequest with _$JoinRoomRequest {
-  factory JoinRoomRequest(String playerName, String roomName, [@nullable String password]) = _JoinRoomRequest;
+  factory JoinRoomRequest(String playerName, String roomName, [String? password]) = _JoinRoomRequest;
   factory JoinRoomRequest.fromJson(Map<String, dynamic> json) => _$JoinRoomRequestFromJson(json);
 }
 

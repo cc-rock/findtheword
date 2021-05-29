@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
           HomePageBloc bloc = BlocProvider.of(context);
           TextEditingController playerNameController = TextEditingController(text: _initialState.playerName);
           TextEditingController roomNameController = TextEditingController(text: _initialState.roomName);
-          Function listener = () {
+          void Function() listener = () {
             bloc.add(HomePageEvent.textChanged(playerNameController.text, roomNameController.text));
           };
           playerNameController.addListener(listener);

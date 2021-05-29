@@ -19,7 +19,7 @@ abstract class RoomDTO with _$RoomDTO {
   factory RoomDTO(
       @JsonKey(name: "game_id") String gameId,
       String admin,
-      @nullable String password,
+      String? password,
       Map<String, PlayerDTO> players,
       RoomPublicInfoDTO public
       ) = _RoomDTO;

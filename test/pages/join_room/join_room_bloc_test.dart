@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:bloc_test/bloc_test.dart';
 import 'package:findtheword/domain/common/result.dart';
 import 'package:findtheword/domain/join_room/room.dart';
@@ -7,7 +5,6 @@ import 'package:findtheword/domain/join_room/use_case/get_room_status.dart';
 import 'package:findtheword/domain/join_room/use_case/join_room.dart';
 import 'package:findtheword/pages/join_room/join_room_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 
 class MockGetRoomStatus extends Mock implements GetRoomStatus {}
 class MockJoinRoom extends Mock implements JoinRoom {}
@@ -17,158 +14,157 @@ const String roomName = "Test Room";
 
 void main() {
 
-  GetRoomStatus getRoomStatus;
-  JoinRoom joinRoom;
+  late GetRoomStatus getRoomStatus;
+  late JoinRoom joinRoom;
 
   setUp(() {
     getRoomStatus = MockGetRoomStatus();
     joinRoom = MockJoinRoom();
   });
 
-  JoinRoomBloc buildBloc(RoomStatus roomStatus, [String password]) {
-    when(getRoomStatus.invoke(roomName)).thenAnswer((_) => Future.value(Result.success(roomStatus)));
+  JoinRoomBloc buildBloc(RoomStatus roomStatus, [String? password]) {
+    when(() => getRoomStatus.invoke(roomName)).thenAnswer((_) => Future.value(Result.success(roomStatus)));
     return JoinRoomBloc(
         getRoomStatus, joinRoom, JoinRoomState.loading(JoinRoomRequest(playerName, roomName, password))
     );
   }
 
-  blocTest("When the room status is non existent, navigation is triggered to the create room page",
+  blocTest<JoinRoomBloc, JoinRoomState>("When the room status is non existent, navigation is triggered to the create room page",
     build: () => buildBloc(RoomStatus.nonExistent),
-    expect: [
+    expect: () =>[
       JoinRoomState.loading(JoinRoomRequest(playerName, roomName)),
       JoinRoomState.navigate(JoinRoomRequest(playerName, roomName), JoinRoomNavigationAction.goToCreateRoom),
     ],
     verify: (_) {
-      verify(getRoomStatus.invoke(roomName));
+      verify(() => getRoomStatus.invoke(roomName));
     }
   );
 
-  blocTest("When the room status is available with password and no password is provided, navigation is triggered to the ask password page",
+  blocTest<JoinRoomBloc, JoinRoomState>("When the room status is available with password and no password is provided, navigation is triggered to the ask password page",
       build: () => buildBloc(RoomStatus.availableWithPassword),
-      expect: [
+      expect: () => [
         JoinRoomState.loading(JoinRoomRequest(playerName, roomName)),
         JoinRoomState.navigate(JoinRoomRequest(playerName, roomName), JoinRoomNavigationAction.goToAskPassword),
       ],
       verify: (_) {
-        verify(getRoomStatus.invoke(roomName));
+        verify(() => getRoomStatus.invoke(roomName));
       }
   );
 
-  blocTest("When the room status is unavailable, the room unavailable status is returned",
+  blocTest<JoinRoomBloc, JoinRoomState>("When the room status is unavailable, the room unavailable status is returned",
       build: () => buildBloc(RoomStatus.unavailable),
-      expect: [
+      expect: () => [
         JoinRoomState.loading(JoinRoomRequest(playerName, roomName)),
         JoinRoomState.roomUnavailable(JoinRoomRequest(playerName, roomName)),
       ],
       verify: (_) {
-        verify(getRoomStatus.invoke(roomName));
+        verify(() => getRoomStatus.invoke(roomName));
       }
   );
 
-  blocTest("If an error is returned by getRoomStatus, the error state is returned",
+  blocTest<JoinRoomBloc, JoinRoomState>("If an error is returned by getRoomStatus, the error state is returned",
       build: () {
         JoinRoomBloc bloc = buildBloc(RoomStatus.availableWithPassword);
-        when(getRoomStatus.invoke(roomName)).thenAnswer((_) => Future.value(Result.error(Exception())));
+        when(() => getRoomStatus.invoke(roomName)).thenAnswer((_) => Future.value(Result.error(Exception())));
         return bloc;
       },
-      expect: [
+      expect: () => [
         JoinRoomState.loading(JoinRoomRequest(playerName, roomName)),
         JoinRoomState.error(JoinRoomRequest(playerName, roomName)),
       ],
       verify: (_) {
-        verify(getRoomStatus.invoke(roomName));
+        verify(() => getRoomStatus.invoke(roomName));
       }
   );
 
-  blocTest("When the room status is available and joinRoom is successful, navigation is triggered to the wait for players page",
+  blocTest<JoinRoomBloc, JoinRoomState>("When the room status is available and joinRoom is successful, navigation is triggered to the wait for players page",
       build: () {
-        when(joinRoom.invoke(playerName, roomName)).thenAnswer((realInvocation) => Future.value(Result.success("")));
+        when(() => joinRoom.invoke(playerName, roomName)).thenAnswer((realInvocation) => Future.value(Result.success("")));
         return buildBloc(RoomStatus.available);
       },
-      expect: [
+      expect: () => [
         JoinRoomState.loading(JoinRoomRequest(playerName, roomName)),
         JoinRoomState.navigate(JoinRoomRequest(playerName, roomName), JoinRoomNavigationAction.goToWaitForPlayers),
       ],
       verify: (_) {
-        verify(getRoomStatus.invoke(roomName));
-        verify(joinRoom.invoke(playerName, roomName));
+        verify(() => getRoomStatus.invoke(roomName));
+        verify(() => joinRoom.invoke(playerName, roomName));
       }
   );
 
-  blocTest("When the room status is available and joinRoom returns error, the error state is returned",
+  blocTest<JoinRoomBloc, JoinRoomState>("When the room status is available and joinRoom returns error, the error state is returned",
       build: () {
-        when(joinRoom.invoke(playerName, roomName)).thenAnswer((realInvocation) => Future.value(Result.error(Exception())));
+        when(() => joinRoom.invoke(playerName, roomName)).thenAnswer((realInvocation) => Future.value(Result.error(Exception())));
         return buildBloc(RoomStatus.available);
       },
-      expect: [
+      expect: () => [
         JoinRoomState.loading(JoinRoomRequest(playerName, roomName)),
         JoinRoomState.error(JoinRoomRequest(playerName, roomName)),
       ],
       verify: (_) {
-        verify(getRoomStatus.invoke(roomName));
-        verify(joinRoom.invoke(playerName, roomName));
+        verify(() => getRoomStatus.invoke(roomName));
+        verify(() => joinRoom.invoke(playerName, roomName));
       }
   );
 
-  blocTest("When the room status is available with password, a password is provided and joinRoom is successful, navigation is triggered to the wait for players page",
+  blocTest<JoinRoomBloc, JoinRoomState>("When the room status is available with password, a password is provided and joinRoom is successful, navigation is triggered to the wait for players page",
       build: () {
-        when(joinRoom.invoke(playerName, roomName, "aPassword")).thenAnswer((realInvocation) => Future.value(Result.success("")));
+        when(() => joinRoom.invoke(playerName, roomName, "aPassword")).thenAnswer((realInvocation) => Future.value(Result.success("")));
         return buildBloc(RoomStatus.availableWithPassword, "aPassword");
       },
-      expect: [
+      expect: () => [
         JoinRoomState.loading(JoinRoomRequest(playerName, roomName, "aPassword")),
         JoinRoomState.navigate(JoinRoomRequest(playerName, roomName, "aPassword"), JoinRoomNavigationAction.goToWaitForPlayers),
       ],
       verify: (_) {
-        verify(getRoomStatus.invoke(roomName));
-        verify(joinRoom.invoke(playerName, roomName, "aPassword"));
+        verify(() => getRoomStatus.invoke(roomName));
+        verify(() => joinRoom.invoke(playerName, roomName, "aPassword"));
       }
   );
 
-  blocTest("When the initial state is 'error', the request is not fired",
+  blocTest<JoinRoomBloc, JoinRoomState>("When the initial state is 'error', the request is not fired",
       build: () {
         return JoinRoomBloc(getRoomStatus, joinRoom, JoinRoomState.error(JoinRoomRequest(playerName, roomName)));
       },
-      expect: [],
+      expect: () => [],
       verify: (_) {
-        verifyNever(getRoomStatus.invoke(roomName));
-        verifyNever(joinRoom.invoke(playerName, roomName));
+        verifyNever(() => getRoomStatus.invoke(roomName));
+        verifyNever(() => joinRoom.invoke(playerName, roomName));
       }
   );
 
-  blocTest("When the initial state is 'room unavailable', the request is not fired",
+  blocTest<JoinRoomBloc, JoinRoomState>("When the initial state is 'room unavailable', the request is not fired",
       build: () {
         return JoinRoomBloc(getRoomStatus, joinRoom, JoinRoomState.roomUnavailable(JoinRoomRequest(playerName, roomName)));
       },
-      expect: [],
+      expect: () => [],
       verify: (_) {
-        verifyNever(getRoomStatus.invoke(roomName));
-        verifyNever(joinRoom.invoke(playerName, roomName));
+        verifyNever(() => getRoomStatus.invoke(roomName));
+        verifyNever(() => joinRoom.invoke(playerName, roomName));
       }
   );
 
-  blocTest("When 'start again' is pressed, navigation is triggered to the home page",
+  blocTest<JoinRoomBloc, JoinRoomState>("When 'start again' is pressed, navigation is triggered to the home page",
       build: () {
         return JoinRoomBloc(getRoomStatus, joinRoom, JoinRoomState.error(JoinRoomRequest(playerName, roomName)));
       },
       act: (bloc) => bloc.add(JoinRoomEvent.startAgainPressed()),
-      expect: [JoinRoomStateNavigate(JoinRoomRequest(playerName, roomName), JoinRoomNavigationAction.goToHomePage)],
+      expect: () => [JoinRoomStateNavigate(JoinRoomRequest(playerName, roomName), JoinRoomNavigationAction.goToHomePage)],
       verify: (_) {
-        verifyNever(getRoomStatus.invoke(roomName));
-        verifyNever(joinRoom.invoke(playerName, roomName));
+        verifyNever(() => getRoomStatus.invoke(roomName));
+        verifyNever(() => joinRoom.invoke(playerName, roomName));
       }
   );
 
-  blocTest("When 'try another password' is pressed, navigation is triggered to ask password page",
+  blocTest<JoinRoomBloc, JoinRoomState>("When 'try another password' is pressed, navigation is triggered to ask password page",
       build: () {
         return JoinRoomBloc(getRoomStatus, joinRoom, JoinRoomState.error(JoinRoomRequest(playerName, roomName)));
       },
       act: (bloc) => bloc.add(JoinRoomEvent.tryOtherPasswordPressed()),
-      expect: [JoinRoomStateNavigate(JoinRoomRequest(playerName, roomName), JoinRoomNavigationAction.goToAskPassword
-      )],
+      expect: () => [JoinRoomStateNavigate(JoinRoomRequest(playerName, roomName), JoinRoomNavigationAction.goToAskPassword)],
       verify: (_) {
-        verifyNever(getRoomStatus.invoke(roomName));
-        verifyNever(joinRoom.invoke(playerName, roomName));
+        verifyNever(() => getRoomStatus.invoke(roomName));
+        verifyNever(() => joinRoom.invoke(playerName, roomName));
       }
   );
 

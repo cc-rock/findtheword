@@ -17,14 +17,14 @@ abstract class AppEvent with _$AppEvent {
 @freezed
 abstract class AppState with _$AppState {
   const factory AppState.initialising() = AppStateInitialising;
-  const factory AppState.showPage(@nullable Object pageState) = AppStateInitialised;
+  const factory AppState.showPage(Object pageState) = AppStateInitialised;
   const factory AppState.error(String message) = AppStateError;
 }
 
 class AppBloc extends Bloc<AppEvent, AppState> {
   AppBloc() : super(AppState.initialising());
 
-  Injector injector;
+  late Injector injector;
 
   Future<AppState> _initialise() async {
     try {

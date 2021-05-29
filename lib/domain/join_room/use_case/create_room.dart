@@ -9,7 +9,7 @@ class CreateRoom {
   CreateRoom(this._roomRepository, this._userIdRepository);
 
   Future<Result<String>> invoke(
-          String adminName, String roomName, [String password]) async {
+          String adminName, String roomName, [String? password]) async {
     try {
       String currentUserId = await _userIdRepository.currentUserId;
       String gameId = await _roomRepository.createRoom(currentUserId, adminName, roomName, password);

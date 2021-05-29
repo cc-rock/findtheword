@@ -3,10 +3,10 @@ import 'package:findtheword/pages/ask_password/ask_password_bloc.dart';
 
 void main() {
 
-  blocTest("When a password is entered, it is passed back in the next state and navigation is triggered",
+  blocTest<AskPasswordBloc, AskPasswordState>("When a password is entered, it is passed back in the next state and navigation is triggered",
     build: () => AskPasswordBloc(AskPasswordState("playerName", "roomName")),
     act: (bloc) => bloc.add(PasswordEnteredEvent("thePassword")),
-    expect: [AskPasswordState("playerName", "roomName", "thePassword", true)]
+    expect: () => [AskPasswordState("playerName", "roomName", "thePassword", true)]
   );
 
 }

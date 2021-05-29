@@ -41,7 +41,7 @@ abstract class GameSettingsState with _$GameSettingsState {
       @Default(false) bool startButtonEnabled,
       @Default(false) bool goToFirstRound,
       @Default(false) bool error,
-      GameSettings settings]
+      GameSettings? settings]
   ) = _GameSettingsState;
   factory GameSettingsState.fromJson(Map<String, dynamic> json) => _$GameSettingsStateFromJson(json);
 }
@@ -58,8 +58,8 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
 
   RegExp _durationRegExp = RegExp(r"^(\d+):(\d\d)$");
 
-  StreamSubscription _settingsSubscription;
-  StreamSubscription _categoriesSubscription;
+  StreamSubscription? _settingsSubscription;
+  StreamSubscription? _categoriesSubscription;
 
   GameSettingsBloc(
       GameSettingsState initialsState,
@@ -69,13 +69,13 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
       this._changeSettings,
       this._getCategoriesUpdates,
       this._getGameSettingsUpdates): super(initialsState) {
-    _durationValidationStarted = initialsState.durationText != null;
+    _durationValidationStarted = initialsState.durationText.isNotEmpty;
     add(GameSettingsEvent.startLoading());
   }
 
 
   @override
-  Future<Function> close() {
+  Future<void> close() {
     _settingsSubscription?.cancel();
     _categoriesSubscription?.cancel();
     return super.close();
@@ -108,9 +108,9 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
           },
           durationChanged: (newDurationText) async* {
             if (_durationValidationStarted) {
-              int durationSeconds = _parseDuration(newDurationText);
-              if (durationSeconds != null) {
-                await _changeSettings.invoke(state.gameId, state.settings.copyWith(roundDurationSeconds: durationSeconds));
+              int? durationSeconds = _parseDuration(newDurationText);
+              if (durationSeconds != null && state.settings != null) {
+                await _changeSettings.invoke(state.gameId, state.settings!.copyWith(roundDurationSeconds: durationSeconds));
                 yield state.copyWith(
                     durationIsValid: true,
                     durationText: newDurationText,
@@ -128,7 +128,10 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
             _durationValidationStarted = true;
           },
           finishModeCheckboxClicked: (isChecked) async* {
-            await _changeSettings.invoke(state.gameId, state.settings.copyWith(finishWhenFirstPlayerFinishes: isChecked));
+            if (state.settings == null) {
+              return;
+            }
+            await _changeSettings.invoke(state.gameId, state.settings!.copyWith(finishWhenFirstPlayerFinishes: isChecked));
             yield state.copyWith(
                 finishWhenFirstFinishes: isChecked,
                 error: false
@@ -159,12 +162,12 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
     return "${(durationSeconds /~ 60)}:${durationSeconds.remainder(60)}";
   }
 
-  int _parseDuration(String durationText) {
-    RegExpMatch match = _durationRegExp.firstMatch(durationText);
+  int? _parseDuration(String durationText) {
+    RegExpMatch? match = _durationRegExp.firstMatch(durationText);
     if (match == null) {
       return null;
     }
-    return int.parse(match.group(0)) * 60 + int.parse(match.group(1));
+    return int.parse(match.group(0)!) * 60 + int.parse(match.group(1)!);
   }
 
   factory GameSettingsBloc.fromContext(BuildContext context, GameSettingsState initialState) {

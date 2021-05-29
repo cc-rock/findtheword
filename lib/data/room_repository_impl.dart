@@ -14,7 +14,7 @@ class RoomRepositoryImpl implements RoomRepository {
   RoomRepositoryImpl(this._dbWrapper);
 
   @override
-  Future<String> createRoom(String adminUserId, String adminName, String roomName, [String password]) {
+  Future<String> createRoom(String adminUserId, String adminName, String roomName, [String? password]) {
     String gameId = _dbWrapper.generateKey("/games");
     return _dbWrapper.set("/rooms/$roomName", RoomDTO(
       gameId,
@@ -44,7 +44,7 @@ class RoomRepositoryImpl implements RoomRepository {
   }
 
   @override
-  Future<void> joinRoom(String playerUserId, String playerName, String roomName, [String password]) {
+  Future<void> joinRoom(String playerUserId, String playerName, String roomName, [String? password]) {
     return _dbWrapper.set(
         "/rooms/$roomName/players/$playerUserId",
         PlayerDTO(playerName, DateTime.now().millisecondsSinceEpoch, password).toJson()

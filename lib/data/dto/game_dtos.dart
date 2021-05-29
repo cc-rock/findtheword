@@ -14,7 +14,7 @@ abstract class GameDTO with _$GameDTO {
       String admin,
       List<String> categories,
       GameSettingsDTO settings,
-      @nullable @JsonKey(name: "upcoming_round") UpcomingRoundDTO upcomingRound,
+      @JsonKey(name: "upcoming_round") UpcomingRoundDTO? upcomingRound,
       Map<String, Map<String, Map<String, WordDTO>>> rounds,
       @JsonKey(name: "available_letters") String availableLetters
   ) = _GameDTO;
