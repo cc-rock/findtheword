@@ -53,7 +53,7 @@ class HomePage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: BlocBuilder<HomePageBloc, HomePageState>(
-                        builder: (context, state) => RaisedButton(
+                        builder: (context, state) => ElevatedButton(
                             onPressed: state.joinButtonEnabled ? () => bloc.add(HomePageEvent.joinPressed()) : null,
                             child: Text("Join"),
                         ),

@@ -1,5 +1,6 @@
 import 'package:findtheword/domain/common/player.dart';
 import 'package:findtheword/domain/game/game.dart';
+import 'package:findtheword/domain/game/ongoing_round.dart';
 
 abstract class GameRepository {
 
@@ -16,8 +17,18 @@ abstract class GameRepository {
 
   Stream<GameSettings> getSettingsUpdates(String gameId);
 
+  Future<GameSettings> getSettings(String gameId);
+
+  Future<String> getAvailableLetters(String gameId);
+
+  Future<void> saveAvailableLetters(String gameId, String availableLetters);
+
   Future<String> getGameAdminId(String gameId);
 
   Future<void> saveSettings(String gameId, GameSettings settings);
+
+  Future<void> saveOngoingRound(String gameId, OngoingRound ongoingRound);
+
+  Stream<OngoingRound> getOngoingRoundUpdates(String gameId);
 
 }

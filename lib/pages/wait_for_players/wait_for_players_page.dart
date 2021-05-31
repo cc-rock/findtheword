@@ -47,7 +47,7 @@ class WaitForPlayersPage extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: BlocBuilder<WaitForPlayersBloc, WaitForPlayersState>(
                   builder: (context, state) {
-                    return state.admin ? RaisedButton(
+                    return state.admin ? ElevatedButton(
                       child: Text("Continue"),
                       onPressed: () {
                         BlocProvider.of<WaitForPlayersBloc>(context).add(WaitForPlayersEvent.continueClicked());
@@ -60,7 +60,7 @@ class WaitForPlayersPage extends StatelessWidget {
               BlocListener<WaitForPlayersBloc, WaitForPlayersState>(
                 listener: (context, state) {
                   if (state.readyToStart) {
-                    BlocProvider.of<NavigationCubit>(context).goToGameSettings(state.roomName);
+                    BlocProvider.of<NavigationCubit>(context).goToGameSettings(state.gameId!);
                   }
                 },
                 listenWhen: (previous, next) => next.readyToStart,

@@ -18,3 +18,11 @@ Map<String, PlayerDTO> playersToDTOs(List<Player> players) {
     )
   )));
 }
+
+List<String> categoriesFromRaw(dynamic rawCategories) {
+  if (rawCategories != null) {
+    return (rawCategories as List<dynamic>).map((cat) => cat as String).toList();
+  } else {
+    return [];
+  }
+}

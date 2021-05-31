@@ -85,7 +85,7 @@ class JoinRoomPage extends StatelessWidget {
       Expanded(child: Container()),
       showNewPassword ? Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-        child: RaisedButton(
+        child: ElevatedButton(
           child: Text("Try another password"),
           onPressed: () => {
             BlocProvider.of<JoinRoomBloc>(context).add(JoinRoomEvent.tryOtherPasswordPressed())
@@ -94,7 +94,7 @@ class JoinRoomPage extends StatelessWidget {
       ) : Container(),
       Padding(
         padding: const EdgeInsets.all(16.0),
-        child: RaisedButton(
+        child: ElevatedButton(
           child: Text("Start again"),
             onPressed: () => {
               BlocProvider.of<JoinRoomBloc>(context).add(JoinRoomEvent.startAgainPressed())

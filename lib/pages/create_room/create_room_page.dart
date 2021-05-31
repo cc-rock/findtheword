@@ -57,7 +57,7 @@ class CreateRoomPage extends StatelessWidget {
                     Expanded(child: Container()),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      child: RaisedButton(
+                      child: ElevatedButton(
                           child: Text("Continue"),
                           onPressed: () {
                             BlocProvider.of<CreateRoomBloc>(context).add(CreateRoomEvent.continueClicked(state.requirePasswordChecked, passwordController.text));
@@ -66,7 +66,7 @@ class CreateRoomPage extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      child: RaisedButton(
+                      child: ElevatedButton(
                           child: Text("Start again"),
                           onPressed: () {
                             BlocProvider.of<NavigationCubit>(context).goToHomePage(state.playerName, state.roomName);
@@ -89,7 +89,7 @@ class CreateRoomPage extends StatelessWidget {
                     '''.unindent()),
                     ),
                     Expanded(child: Container()),
-                    RaisedButton(
+                    ElevatedButton(
                         child: Text("Start again"),
                         onPressed: () {
                           BlocProvider.of<NavigationCubit>(context).goToHomePage(state.playerName, state.roomName);

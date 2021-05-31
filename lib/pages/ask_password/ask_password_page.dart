@@ -38,7 +38,7 @@ class AskPasswordPage extends StatelessWidget {
                     ),
                   ),
                   Expanded(child: Container()),
-                  RaisedButton(
+                  ElevatedButton(
                     child: Text("Continue"),
                     onPressed: () {
                       BlocProvider.of<AskPasswordBloc>(context).add(PasswordEnteredEvent(passwordController.text));

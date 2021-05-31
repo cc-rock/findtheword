@@ -14,8 +14,8 @@ abstract class GameDTO with _$GameDTO {
       String admin,
       List<String> categories,
       GameSettingsDTO settings,
-      @JsonKey(name: "upcoming_round") UpcomingRoundDTO? upcomingRound,
-      Map<String, Map<String, Map<String, WordDTO>>> rounds,
+      @JsonKey(name: "upcoming_round") OngoingRoundDTO? upcomingRound,
+      Map<String, Map<String, WordDTO>> rounds,
       @JsonKey(name: "available_letters") String availableLetters
   ) = _GameDTO;
   factory GameDTO.fromJson(Map<String, dynamic> json) => _$GameDTOFromJson(json);
@@ -34,13 +34,13 @@ abstract class GameSettingsDTO with _$GameSettingsDTO {
 }
 
 @freezed
-abstract class UpcomingRoundDTO with _$UpcomingRoundDTO {
-  factory UpcomingRoundDTO(String letter, int startTimestamp) = _UpcomingRoundDTO;
-  factory UpcomingRoundDTO.fromJson(Map<String, dynamic> json) => _$UpcomingRoundDTOFromJson(json);
+abstract class OngoingRoundDTO with _$OngoingRoundDTO {
+  factory OngoingRoundDTO(String letter, int startTimestamp, bool finishing) = _OngoingRoundDTO;
+  factory OngoingRoundDTO.fromJson(Map<String, dynamic> json) => _$OngoingRoundDTOFromJson(json);
 }
 
 @freezed
 abstract class WordDTO with _$WordDTO {
-  factory WordDTO(String word, bool isValid, String sameAsPlayerId) = _WordDTO;
+  factory WordDTO(String category, String word, @JsonKey(name: "is_valid")  isValid, @JsonKey(name: "same_as") String sameAs) = _WordDTO;
   factory WordDTO.fromJson(Map<String, dynamic> json) => _$WordDTOFromJson(json);
 }
