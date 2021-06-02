@@ -16,6 +16,7 @@ import 'package:findtheword/domain/game/use_case/get_default_settings.dart';
 import 'package:findtheword/domain/game/use_case/get_game_settings.dart';
 import 'package:findtheword/domain/game/use_case/get_game_settings_updates.dart';
 import 'package:findtheword/domain/game/use_case/get_ongoing_round_updates.dart';
+import 'package:findtheword/domain/game/use_case/is_other_player_finishing.dart';
 import 'package:findtheword/domain/game/use_case/start_round.dart';
 import 'package:findtheword/domain/join_room/room_repository.dart';
 import 'package:findtheword/domain/join_room/use_case/am_i_room_admin.dart';
@@ -78,6 +79,8 @@ class Injector {
   SetRoomUnavailable get setRoomUnavailable => _getCached(() => SetRoomUnavailable(roomRepository));
 
   GetOngoingRoundUpdates get getOngoingRoundUpdates => _getCached(() => GetOngoingRoundUpdates(gameRepository));
+
+  IsOtherPlayerFinishing get isOtherPlayerFinishing => _getCached(() => IsOtherPlayerFinishing(userIdRepository));
 
   StartRound get startRound => _getCached(() => StartRound(
       gameRepository,

@@ -80,14 +80,14 @@ class GameRepositoryImpl implements GameRepository {
 
   @override
   Future<void> saveOngoingRound(String gameId, OngoingRound ongoingRound) {
-    return _dbWrapper.set("games/$gameId/upcoming_round", OngoingRoundDTO(ongoingRound.letter, ongoingRound.startTime, ongoingRound.finishing).toJson());
+    return _dbWrapper.set("games/$gameId/upcoming_round", OngoingRoundDTO(ongoingRound.letter, ongoingRound.startTime, ongoingRound.finishingPlayerId).toJson());
   }
 
   @override
   Stream<OngoingRound> getOngoingRoundUpdates(String gameId) {
     return _dbWrapper.onValue("games/$gameId/upcoming_round").map((json) {
       final OngoingRoundDTO dto = OngoingRoundDTO.fromJson(json);
-      return OngoingRound(dto.letter, dto.startTimestamp, dto.finishing);
+      return OngoingRound(dto.letter, dto.startTimestamp, dto.finishingPlayerId);
     });
   }
 

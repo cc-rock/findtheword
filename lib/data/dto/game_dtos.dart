@@ -35,7 +35,7 @@ abstract class GameSettingsDTO with _$GameSettingsDTO {
 
 @freezed
 abstract class OngoingRoundDTO with _$OngoingRoundDTO {
-  factory OngoingRoundDTO(String letter, int startTimestamp, bool finishing) = _OngoingRoundDTO;
+  factory OngoingRoundDTO(String letter, int startTimestamp, String? finishingPlayerId) = _OngoingRoundDTO;
   factory OngoingRoundDTO.fromJson(Map<String, dynamic> json) => _$OngoingRoundDTOFromJson(json);
 }
 
