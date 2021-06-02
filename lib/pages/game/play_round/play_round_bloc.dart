@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:findtheword/app/injector.dart';
-import 'package:findtheword/domain/common/pair.dart';
-import 'package:findtheword/domain/game/ongoing_round.dart';
+import 'package:findtheword/domain/game/game.dart';
 import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
+import 'package:findtheword/domain/game/use_case/get_categories.dart';
+import 'package:findtheword/domain/game/use_case/get_game_settings.dart';
+import 'package:findtheword/domain/game/use_case/get_game_settings_updates.dart';
 import 'package:findtheword/domain/game/use_case/get_ongoing_round_updates.dart';
 import 'package:findtheword/domain/game/use_case/start_round.dart';
 import 'package:findtheword/domain/game/word.dart';
@@ -17,9 +19,10 @@ part 'play_round_bloc.g.dart';
 @freezed
 abstract class PlayRoundEvent with _$PlayRoundEvent {
   factory PlayRoundEvent.start() = PlayRoundStart;
-  factory PlayRoundEvent.roundStarted(String letter, int startTime, List<Word> words) = RoundStarted;
+  factory PlayRoundEvent.roundStarted(String letter, int startTime) = RoundStarted;
   factory PlayRoundEvent.tick() = PlayRoundTick;
   factory PlayRoundEvent.wordChanged(String category, String word) = WordChanged;
+  factory PlayRoundEvent.doneClicked() = DoneClicked;
   factory PlayRoundEvent.roundFinished() = RoundFinished;
 }
 
@@ -40,11 +43,23 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
 
   final StartRound _startRound;
   final GetOngoingRoundUpdates _getUpcomingRoundUpdates;
+  final GetCategories _getCategories;
+  final GetGameSettings _getGameSettings;
   final AmIGameAdmin _amIGameAdmin;
+  final int Function() _getCurrentTimeMillis;
 
-  StreamSubscription<Pair<OngoingRound, List<Word>>>? _subscription;
+  StreamSubscription? _subscription;
 
-  PlayRoundBloc(PlayRoundState initialState, this._startRound, this._getUpcomingRoundUpdates, this._amIGameAdmin): super(initialState) {
+  Timer? _timer;
+
+  PlayRoundBloc(
+      PlayRoundState initialState,
+      this._startRound,
+      this._getUpcomingRoundUpdates,
+      this._amIGameAdmin,
+      this._getCategories,
+      this._getGameSettings,
+      this._getCurrentTimeMillis): super(initialState) {
     add(PlayRoundEvent.start());
   }
 
@@ -59,17 +74,40 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
   Stream<PlayRoundState> mapEventToState(PlayRoundEvent event) {
     return event.when(
         start: () async* {
-          final bool admin = (await _amIGameAdmin.invoke(state.gameId)).when(success: (value) => value, error: (_) => false);
-          if (admin) {
-            _startRound.invoke(state.gameId);
-          }
-          _subscription = _getUpcomingRoundUpdates.invoke(state.gameId).listen((pair) {
-            _subscription?.cancel();
-            add(PlayRoundEvent.roundStarted(pair.first.letter, pair.first.startTime, pair.second));
+          _subscription = _getUpcomingRoundUpdates.invoke(state.gameId).listen((round) {
+            if (!round.finishing) {
+              add(PlayRoundEvent.roundStarted(round.letter, round.startTime));
+            } else {
+
+            }
           });
         },
-        roundStarted: (letter, startTime, words) async* {
-
+        roundStarted: (letter, startTime) async* {
+          List<String> categories = await _getCategories.invoke(state.gameId);
+          GameSettings settings = await _getGameSettings.invoke(state.gameId);
+          List<Word> words = categories.map((cat) => Word(cat, "", false, "")).toList();
+          int currentTime = _getCurrentTimeMillis();
+          int nextSecond = ((currentTime ~/ 1000) + 1) * 1000;
+          int toNextSecond = nextSecond - currentTime;
+          if (toNextSecond < 100) {
+            nextSecond += 1000;
+            toNextSecond = nextSecond - currentTime;
+          }
+          int secondsToStart = (startTime - nextSecond) ~/ 1000;
+          int remainingSeconds = settings.roundDurationSeconds;
+          if (nextSecond <= startTime) {
+            secondsToStart = 0;
+            remainingSeconds = settings.roundDurationSeconds - ((startTime - nextSecond) ~/ 1000);
+          }
+          yield PlayRoundState(
+            state.gameId,
+            loading: false,
+            secondsToStart: secondsToStart,
+            remainingSeconds: remainingSeconds,
+            letter: letter,
+            words: words
+          );
+          _timer = Timer(Duration(milliseconds: toNextSecond), _timerCallback);
         },
         tick: () async* {
 
@@ -79,8 +117,17 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
         },
         roundFinished: () async* {
 
+        },
+        doneClicked: () async* {
+
         }
     );
+  }
+
+  void _timerCallback() {
+    _timer?.cancel();
+    _timer = Timer(Duration(seconds: 1), _timerCallback);
+    add(PlayRoundEvent.tick());
   }
 
   factory PlayRoundBloc.fromContext(BuildContext context, PlayRoundState initialState) {
@@ -89,7 +136,10 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
         initialState,
         injector.startRound,
         injector.getOngoingRoundUpdates,
-        injector.amIGameAdmin
+        injector.amIGameAdmin,
+        injector.getCategories,
+        injector.getGameSettings,
+        () => DateTime.now().millisecondsSinceEpoch
     );
   }
 

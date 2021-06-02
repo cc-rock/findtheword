@@ -1,3 +1,4 @@
+import 'package:findtheword/app/navigation/navigation_cubit.dart';
 import 'package:findtheword/pages/game/game_settings/game_settings_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -115,6 +116,13 @@ class GameSettingsPage extends StatelessWidget {
                       ),
                     ),
                     buildWhen: (prev, next) => prev.startButtonEnabled != next.startButtonEnabled
+                  ),
+                  BlocListener<GameSettingsBloc, GameSettingsState>(
+                    listener: (context, state) {
+                      BlocProvider.of<NavigationCubit>(context).goToPlayRound(state.gameId);
+                    },
+                    child: Container(),
+                    listenWhen: (prev, next) => next.goToFirstRound,
                   )
                 ],
               )

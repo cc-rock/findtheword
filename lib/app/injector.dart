@@ -10,8 +10,10 @@ import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
 import 'package:findtheword/domain/game/use_case/change_settings.dart';
 import 'package:findtheword/domain/game/use_case/create_game.dart';
 import 'package:findtheword/domain/game/use_case/delete_category.dart';
+import 'package:findtheword/domain/game/use_case/get_categories.dart';
 import 'package:findtheword/domain/game/use_case/get_categories_updates.dart';
 import 'package:findtheword/domain/game/use_case/get_default_settings.dart';
+import 'package:findtheword/domain/game/use_case/get_game_settings.dart';
 import 'package:findtheword/domain/game/use_case/get_game_settings_updates.dart';
 import 'package:findtheword/domain/game/use_case/get_ongoing_round_updates.dart';
 import 'package:findtheword/domain/game/use_case/start_round.dart';
@@ -63,7 +65,11 @@ class Injector {
 
   GetCategoriesUpdates get getCategoriesUpdates => _getCached(() => GetCategoriesUpdates(gameRepository));
 
+  GetCategories get getCategories => _getCached(() => GetCategories(gameRepository));
+
   GetGameSettingsUpdates get getGameSettingsUpdates => _getCached(() => GetGameSettingsUpdates(gameRepository));
+
+  GetGameSettings get getGameSettings => _getCached(() => GetGameSettings(gameRepository));
 
   CreateGame get createGame => _getCached(() => CreateGame(gameRepository, getDefaultSettings, userIdRepository));
 
