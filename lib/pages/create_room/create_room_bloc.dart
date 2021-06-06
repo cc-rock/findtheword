@@ -9,13 +9,13 @@ part 'create_room_bloc.freezed.dart';
 part 'create_room_bloc.g.dart';
 
 @freezed
-abstract class CreateRoomEvent with _$CreateRoomEvent {
+class CreateRoomEvent with _$CreateRoomEvent {
   factory CreateRoomEvent.checkboxClicked(bool checked) = CheckboxClicked;
   factory CreateRoomEvent.continueClicked(bool requirePasswordChecked, String password) = ContinueClicked;
 }
 
 @freezed
-abstract class CreateRoomState with _$CreateRoomState {
+class CreateRoomState with _$CreateRoomState {
   factory CreateRoomState.initial(
       String playerName, String roomName, {@Default(false) bool requirePasswordChecked, @Default(false) bool passwordFieldEnabled}
       ) = CreateRoomStateInitial;

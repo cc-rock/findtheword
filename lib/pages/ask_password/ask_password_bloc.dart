@@ -10,7 +10,7 @@ class PasswordEnteredEvent {
 }
 
 @freezed
-abstract class AskPasswordState with _$AskPasswordState {
+class AskPasswordState with _$AskPasswordState {
   factory AskPasswordState(String playerName, String roomName, [String? password, @Default(false) bool goToJoinPage]) = _AskPasswordState;
   factory AskPasswordState.fromJson(Map<String, dynamic> json) => _$AskPasswordStateFromJson(json);
 }

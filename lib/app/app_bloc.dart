@@ -9,13 +9,13 @@ import 'injector.dart';
 part 'app_bloc.freezed.dart';
 
 @freezed
-abstract class AppEvent with _$AppEvent {
+class AppEvent with _$AppEvent {
   const factory AppEvent.startInitialisation() = AppEventStartInitialisation;
   const factory AppEvent.goToPage(Object pageState) = AppEventGoToPage;
 }
 
 @freezed
-abstract class AppState with _$AppState {
+class AppState with _$AppState {
   const factory AppState.initialising() = AppStateInitialising;
   const factory AppState.showPage(Object pageState) = AppStateInitialised;
   const factory AppState.error(String message) = AppStateError;

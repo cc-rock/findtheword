@@ -6,7 +6,7 @@ part 'game_dtos.freezed.dart';
 part 'game_dtos.g.dart';
 
 @freezed
-abstract class GameDTO with _$GameDTO {
+class GameDTO with _$GameDTO {
   @JsonSerializable(explicitToJson: true)
   factory GameDTO(
       @JsonKey(name: "room_name") String roomName,
@@ -22,7 +22,7 @@ abstract class GameDTO with _$GameDTO {
 }
 
 @freezed
-abstract class GameSettingsDTO with _$GameSettingsDTO {
+class GameSettingsDTO with _$GameSettingsDTO {
   factory GameSettingsDTO(
       int roundDurationSeconds,
       bool finishWhenFirstPlayerFinishes,
@@ -34,13 +34,24 @@ abstract class GameSettingsDTO with _$GameSettingsDTO {
 }
 
 @freezed
-abstract class OngoingRoundDTO with _$OngoingRoundDTO {
+class OngoingRoundDTO with _$OngoingRoundDTO {
   factory OngoingRoundDTO(String letter, int startTimestamp, String? finishingPlayerId) = _OngoingRoundDTO;
   factory OngoingRoundDTO.fromJson(Map<String, dynamic> json) => _$OngoingRoundDTOFromJson(json);
 }
 
 @freezed
-abstract class WordDTO with _$WordDTO {
+class RoundDTO with _$RoundDTO {
+  @JsonSerializable(explicitToJson: true)
+  factory RoundDTO(
+      String letter,
+      @JsonKey(name: "first_to_finish") String? firstToFinish,
+      @JsonKey(name: "players_words") Map<String, List<WordDTO>> playersWords
+  ) = _RoundDTO;
+  factory RoundDTO.fromJson(Map<String, dynamic> json) => _$RoundDTOFromJson(json);
+}
+
+@freezed
+class WordDTO with _$WordDTO {
   factory WordDTO(String category, String word, @JsonKey(name: "is_valid")  isValid, @JsonKey(name: "same_as") String sameAs) = _WordDTO;
   factory WordDTO.fromJson(Map<String, dynamic> json) => _$WordDTOFromJson(json);
 }

@@ -19,7 +19,7 @@ part 'game_settings_bloc.freezed.dart';
 part 'game_settings_bloc.g.dart';
 
 @freezed
-abstract class GameSettingsEvent with _$GameSettingsEvent {
+class GameSettingsEvent with _$GameSettingsEvent {
   factory GameSettingsEvent.addedCategory(String category) = AddedCategory;
   factory GameSettingsEvent.deletedCategory(String category) = DeletedCategory;
   factory GameSettingsEvent.durationChanged(String duration) = DurationChanged;
@@ -32,7 +32,7 @@ abstract class GameSettingsEvent with _$GameSettingsEvent {
 }
 
 @freezed
-abstract class GameSettingsState with _$GameSettingsState {
+class GameSettingsState with _$GameSettingsState {
   factory GameSettingsState(
       String gameId,
       [@Default(false) bool admin,

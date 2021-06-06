@@ -1,6 +1,7 @@
 import 'package:findtheword/domain/common/player.dart';
 import 'package:findtheword/domain/game/game.dart';
 import 'package:findtheword/domain/game/ongoing_round.dart';
+import 'package:findtheword/domain/game/word.dart';
 
 abstract class GameRepository {
 
@@ -30,5 +31,9 @@ abstract class GameRepository {
   Future<void> saveOngoingRound(String gameId, OngoingRound ongoingRound);
 
   Stream<OngoingRound> getOngoingRoundUpdates(String gameId);
+
+  Future<OngoingRound> getOngoingRound(String gameId);
+
+  Future<void> saveRoundData(String gameId, String playerId, String letter, List<Word> words);
 
 }

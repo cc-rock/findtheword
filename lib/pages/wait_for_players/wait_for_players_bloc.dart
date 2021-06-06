@@ -16,14 +16,14 @@ part 'wait_for_players_bloc.freezed.dart';
 part 'wait_for_players_bloc.g.dart';
 
 @freezed
-abstract class WaitForPlayersEvent with _$WaitForPlayersEvent {
+class WaitForPlayersEvent with _$WaitForPlayersEvent {
   factory WaitForPlayersEvent.start() = Start;
   factory WaitForPlayersEvent.continueClicked() = ContinueClicked;
   factory WaitForPlayersEvent.updateReceived(Room room) = UpdateReceived;
 }
 
 @freezed
-abstract class WaitForPlayersState with _$WaitForPlayersState {
+class WaitForPlayersState with _$WaitForPlayersState {
   factory WaitForPlayersState(String roomName, String? gameId, bool admin, List<Player> players, bool readyToStart) = _WaitForPlayersState;
   factory WaitForPlayersState.fromJson(Map<String, dynamic> json) => _$WaitForPlayersStateFromJson(json);
 }

@@ -5,6 +5,7 @@ import 'package:findtheword/domain/common/player.dart';
 import 'package:findtheword/domain/game/game.dart';
 import 'package:findtheword/domain/game/game_repository.dart';
 import 'package:findtheword/domain/game/ongoing_round.dart';
+import 'package:findtheword/domain/game/word.dart';
 import 'package:findtheword/firebase/db_wrapper.dart';
 
 class GameRepositoryImpl implements GameRepository {
@@ -80,15 +81,31 @@ class GameRepositoryImpl implements GameRepository {
 
   @override
   Future<void> saveOngoingRound(String gameId, OngoingRound ongoingRound) {
-    return _dbWrapper.set("games/$gameId/upcoming_round", OngoingRoundDTO(ongoingRound.letter, ongoingRound.startTime, ongoingRound.finishingPlayerId).toJson());
+    return _dbWrapper.set("games/$gameId/ongoing_round", OngoingRoundDTO(ongoingRound.letter, ongoingRound.startTime, ongoingRound.finishingPlayerId).toJson());
   }
 
   @override
   Stream<OngoingRound> getOngoingRoundUpdates(String gameId) {
-    return _dbWrapper.onValue("games/$gameId/upcoming_round").map((json) {
+    return _dbWrapper.onValue("games/$gameId/ongoing_round").map((json) {
       final OngoingRoundDTO dto = OngoingRoundDTO.fromJson(json);
       return OngoingRound(dto.letter, dto.startTimestamp, dto.finishingPlayerId);
     });
+  }
+
+  @override
+  Future<OngoingRound> getOngoingRound(String gameId) {
+    return _dbWrapper.once("games/$gameId/ongoing_round").then((json) {
+      final OngoingRoundDTO dto = OngoingRoundDTO.fromJson(json);
+      return OngoingRound(dto.letter, dto.startTimestamp, dto.finishingPlayerId);
+    });
+  }
+
+  @override
+  Future<void> saveRoundData(String gameId, String playerId, String letter, List<Word> words) {
+    return _dbWrapper.set(
+        "games/$gameId/rounds/$letter/$playerId",
+        words.map((word) => WordDTO(word.category, word.word, word.valid, "").toJson()).toList()
+    );
   }
 
 }

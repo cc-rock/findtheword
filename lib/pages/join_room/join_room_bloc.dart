@@ -11,7 +11,7 @@ part 'join_room_bloc.freezed.dart';
 part 'join_room_bloc.g.dart';
 
 @freezed
-abstract class JoinRoomRequest with _$JoinRoomRequest {
+class JoinRoomRequest with _$JoinRoomRequest {
   factory JoinRoomRequest(String playerName, String roomName, [String? password]) = _JoinRoomRequest;
   factory JoinRoomRequest.fromJson(Map<String, dynamic> json) => _$JoinRoomRequestFromJson(json);
 }
@@ -24,7 +24,7 @@ enum JoinRoomNavigationAction {
 }
 
 @freezed
-abstract class JoinRoomState with _$JoinRoomState {
+class JoinRoomState with _$JoinRoomState {
   factory JoinRoomState.loading(JoinRoomRequest request) = JoinRoomStateLoading;
   factory JoinRoomState.roomUnavailable(JoinRoomRequest request) = JoinRoomStateUnavailable;
   factory JoinRoomState.error(JoinRoomRequest request) = JoinRoomStateError;
@@ -33,7 +33,7 @@ abstract class JoinRoomState with _$JoinRoomState {
 }
 
 @freezed
-abstract class JoinRoomEvent with _$JoinRoomEvent {
+class JoinRoomEvent with _$JoinRoomEvent {
   factory JoinRoomEvent.sendRequest() = SendRequest;
   factory JoinRoomEvent.startAgainPressed() = StartAgainPressed;
   factory JoinRoomEvent.tryOtherPasswordPressed() = TryOtherPasswordPressed;

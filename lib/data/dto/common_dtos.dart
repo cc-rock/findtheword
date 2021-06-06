@@ -4,7 +4,7 @@ part 'common_dtos.freezed.dart';
 part 'common_dtos.g.dart';
 
 @freezed
-abstract class PlayerDTO with _$PlayerDTO {
+class PlayerDTO with _$PlayerDTO {
   factory PlayerDTO(String name, int timestamp, String? password) = _PlayerDTO;
   factory PlayerDTO.fromJson(Map<String, dynamic> json) => _$PlayerDTOFromJson(json);
 }

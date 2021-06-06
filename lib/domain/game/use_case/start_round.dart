@@ -15,7 +15,7 @@ class StartRound {
       final int letterIndex = _getRandomInteger(availableLetters.length);
       final String letter = availableLetters.substring(letterIndex, letterIndex + 1);
       final String newAvailableLetters = availableLetters.substring(0, letterIndex) + availableLetters.substring(letterIndex + 1);
-      final int startTime = (_getCurrentTimeMillis() + 5000) ~/ 1000;
+      final int startTime = ((_getCurrentTimeMillis() + 5000) ~/ 1000) * 1000;
       await _gameRepository.saveOngoingRound(gameId, OngoingRound(letter, startTime, null));
       await _gameRepository.saveAvailableLetters(gameId, newAvailableLetters);
       return Result.success("");

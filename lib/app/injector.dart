@@ -10,6 +10,8 @@ import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
 import 'package:findtheword/domain/game/use_case/change_settings.dart';
 import 'package:findtheword/domain/game/use_case/create_game.dart';
 import 'package:findtheword/domain/game/use_case/delete_category.dart';
+import 'package:findtheword/domain/game/use_case/finish_round.dart';
+import 'package:findtheword/domain/game/use_case/finish_round_early.dart';
 import 'package:findtheword/domain/game/use_case/get_categories.dart';
 import 'package:findtheword/domain/game/use_case/get_categories_updates.dart';
 import 'package:findtheword/domain/game/use_case/get_default_settings.dart';
@@ -81,6 +83,10 @@ class Injector {
   GetOngoingRoundUpdates get getOngoingRoundUpdates => _getCached(() => GetOngoingRoundUpdates(gameRepository));
 
   IsOtherPlayerFinishing get isOtherPlayerFinishing => _getCached(() => IsOtherPlayerFinishing(userIdRepository));
+
+  FinishRound get finishRound => _getCached(() => FinishRound(gameRepository, userIdRepository));
+
+  FinishRoundEarly get finishRoundEarly => _getCached(() => FinishRoundEarly(gameRepository, userIdRepository, finishRound));
 
   StartRound get startRound => _getCached(() => StartRound(
       gameRepository,

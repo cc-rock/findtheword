@@ -1,13 +1,12 @@
 import 'dart:async';
-
 import 'package:findtheword/app/injector.dart';
 import 'package:findtheword/domain/game/game.dart';
-import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
+import 'package:findtheword/domain/game/use_case/finish_round.dart';
+import 'package:findtheword/domain/game/use_case/finish_round_early.dart';
 import 'package:findtheword/domain/game/use_case/get_categories.dart';
 import 'package:findtheword/domain/game/use_case/get_game_settings.dart';
 import 'package:findtheword/domain/game/use_case/get_ongoing_round_updates.dart';
 import 'package:findtheword/domain/game/use_case/is_other_player_finishing.dart';
-import 'package:findtheword/domain/game/use_case/start_round.dart';
 import 'package:findtheword/domain/game/word.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,7 +16,7 @@ part 'play_round_bloc.freezed.dart';
 part 'play_round_bloc.g.dart';
 
 @freezed
-abstract class PlayRoundEvent with _$PlayRoundEvent {
+class PlayRoundEvent with _$PlayRoundEvent {
   factory PlayRoundEvent.start() = PlayRoundStart;
   factory PlayRoundEvent.roundStarted(String letter, int startTime) = RoundStarted;
   factory PlayRoundEvent.tick() = PlayRoundTick;
@@ -27,7 +26,8 @@ abstract class PlayRoundEvent with _$PlayRoundEvent {
 }
 
 @freezed
-abstract class PlayRoundState with _$PlayRoundState {
+class PlayRoundState with _$PlayRoundState {
+  const PlayRoundState._();
   @JsonSerializable(explicitToJson: true)
   factory PlayRoundState(String gameId, {
     @Default(true) bool loading,
@@ -38,6 +38,8 @@ abstract class PlayRoundState with _$PlayRoundState {
     @Default(false) bool goToRoundReview
   }) = _PlayRoundState;
   factory PlayRoundState.fromJson(Map<String, dynamic> json) => _$PlayRoundStateFromJson(json);
+
+  Word wordForCategory(String category) => words.firstWhere((word) => word.category == category);
 }
 
 class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
@@ -47,6 +49,8 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
   final GetGameSettings _getGameSettings;
   final int Function() _getCurrentTimeMillis;
   final IsOtherPlayerFinishing _isOtherPlayerFinishing;
+  final FinishRound _finishRound;
+  final FinishRoundEarly _finishRoundEarly;
 
   StreamSubscription? _subscription;
 
@@ -58,7 +62,9 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
       this._getCategories,
       this._getGameSettings,
       this._getCurrentTimeMillis,
-      this._isOtherPlayerFinishing): super(initialState) {
+      this._isOtherPlayerFinishing,
+      this._finishRound,
+      this._finishRoundEarly): super(initialState) {
     add(PlayRoundEvent.start());
   }
 
@@ -98,7 +104,7 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
           }
           int secondsToStart = (startTime - nextSecond) ~/ 1000;
           int remainingSeconds = settings.roundDurationSeconds;
-          if (nextSecond <= startTime) {
+          if (nextSecond >= startTime) {
             secondsToStart = 0;
             remainingSeconds = settings.roundDurationSeconds - ((startTime - nextSecond) ~/ 1000);
           }
@@ -118,7 +124,7 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
           } else if (state.remainingSeconds > 0)  {
             yield state.copyWith(remainingSeconds: state.remainingSeconds - 1);
           } else {
-            _finishRound();
+            _finishRound.invoke(state.gameId, state.letter, state.words);
           }
         },
         wordChanged: (category, newWord) async* {
@@ -136,23 +142,17 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
           }
         },
         doneClicked: () async* {
-          _finishRoundEarly();
+          _finishRoundEarly.invoke(state.gameId, state.letter, state.words);
         }
     );
   }
 
   void _timerCallback() {
     _timer?.cancel();
-    _timer = Timer(Duration(seconds: 1), _timerCallback);
+    int nextSecond = ((_getCurrentTimeMillis() ~/ 1000) + 1) * 1000;
+    int duration = nextSecond - _getCurrentTimeMillis();
+    _timer = Timer(Duration(milliseconds: duration), _timerCallback);
     add(PlayRoundEvent.tick());
-  }
-
-  void _finishRound() {
-
-  }
-
-  void _finishRoundEarly() {
-
   }
 
   bool _validateWord(String word, String letter) {
@@ -167,7 +167,9 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
         injector.getCategories,
         injector.getGameSettings,
         () => DateTime.now().millisecondsSinceEpoch,
-        injector.isOtherPlayerFinishing
+        injector.isOtherPlayerFinishing,
+        injector.finishRound,
+        injector.finishRoundEarly
     );
   }
 

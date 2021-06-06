@@ -3,7 +3,7 @@ part 'game.freezed.dart';
 part 'game.g.dart';
 
 @freezed
-abstract class GameSettings with _$GameSettings {
+class GameSettings with _$GameSettings {
   factory GameSettings(
     int roundDurationSeconds,
     bool finishWhenFirstPlayerFinishes,
