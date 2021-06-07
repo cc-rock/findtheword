@@ -45,8 +45,8 @@ class PlayRoundPage extends StatelessWidget {
     }
     return Column(
       children: [
-        Expanded(child: Center(child: Text(state.letter, style: TextStyle(fontSize: 50.0),))),
-        Expanded(child: Center(child: Text(state.secondsToStart.toString(), style: TextStyle(fontSize: 25.0, color: Color.fromARGB(255, 255, 0, 0)),)))
+        Expanded(child: Center(child: Text(state.letter, style: TextStyle(fontSize: 120.0),))),
+        Expanded(child: Center(child: Text(state.secondsToStart.toString(), style: TextStyle(fontSize: 120.0, color: Color.fromARGB(255, 255, 0, 0)),)))
       ],
     );
   }
@@ -54,9 +54,14 @@ class PlayRoundPage extends StatelessWidget {
   Widget _buildRealRoundUi(BuildContext context, PlayRoundState state) {
     return Column(children: [
       Row(children: [
-        Expanded(child: Text(state.letter)),
+        Expanded(child: Container(child: Text(state.letter, style: TextStyle(fontSize: 40),), alignment: Alignment.center,)),
         Expanded(child: BlocBuilder<PlayRoundBloc, PlayRoundState>(
-          builder: (context, state) => Text(state.remainingSeconds.toString()),
+          builder: (context, state) => Container(
+            child: Text(
+                state.formattedRemainingSeconds,
+              style: TextStyle(color: state.remainingSeconds <= 3 ? Color.fromARGB(255, 255, 0, 0) : Color.fromARGB(255, 0, 0, 0) ),
+            ),
+            alignment: Alignment.center,),
         ))
       ]),
       Expanded(

@@ -40,6 +40,8 @@ class PlayRoundState with _$PlayRoundState {
   factory PlayRoundState.fromJson(Map<String, dynamic> json) => _$PlayRoundStateFromJson(json);
 
   Word wordForCategory(String category) => words.firstWhere((word) => word.category == category);
+
+  String get formattedRemainingSeconds => "${remainingSeconds ~/ 60}:${remainingSeconds.remainder(60).toString().padLeft(2, '0')}";
 }
 
 class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
@@ -80,13 +82,16 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
     return event.when(
         start: () async* {
           _subscription = _getUpcomingRoundUpdates.invoke(state.gameId).listen((round) async {
+            if (round == null) {
+              return;
+            }
             bool otherPlayerFinishing = (await _isOtherPlayerFinishing.invoke(round)).when(
               success: (value) => value,
               error: (_) => false
             );
             if (otherPlayerFinishing) {
               add(PlayRoundEvent.roundFinishing());
-            } else {
+            } else if (round.finishingPlayerId == null) {
               add(PlayRoundEvent.roundStarted(round.letter, round.startTime));
             }
           });
@@ -124,7 +129,8 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
           } else if (state.remainingSeconds > 0)  {
             yield state.copyWith(remainingSeconds: state.remainingSeconds - 1);
           } else {
-            _finishRound.invoke(state.gameId, state.letter, state.words);
+            await _finishRound.invoke(state.gameId, state.letter, state.words);
+            yield state.copyWith(goToRoundReview: true);
           }
         },
         wordChanged: (category, newWord) async* {
@@ -142,7 +148,8 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
           }
         },
         doneClicked: () async* {
-          _finishRoundEarly.invoke(state.gameId, state.letter, state.words);
+          await _finishRoundEarly.invoke(state.gameId, state.letter, state.words);
+          yield state.copyWith(goToRoundReview: true);
         }
     );
   }

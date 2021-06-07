@@ -85,8 +85,11 @@ class GameRepositoryImpl implements GameRepository {
   }
 
   @override
-  Stream<OngoingRound> getOngoingRoundUpdates(String gameId) {
+  Stream<OngoingRound?> getOngoingRoundUpdates(String gameId) {
     return _dbWrapper.onValue("games/$gameId/ongoing_round").map((json) {
+      if (json == null) {
+        return null;
+      }
       final OngoingRoundDTO dto = OngoingRoundDTO.fromJson(json);
       return OngoingRound(dto.letter, dto.startTimestamp, dto.finishingPlayerId);
     });
@@ -103,7 +106,7 @@ class GameRepositoryImpl implements GameRepository {
   @override
   Future<void> saveRoundData(String gameId, String playerId, String letter, List<Word> words) {
     return _dbWrapper.set(
-        "games/$gameId/rounds/$letter/$playerId",
+        "games/$gameId/rounds/$letter/players_words/$playerId",
         words.map((word) => WordDTO(word.category, word.word, word.valid, "").toJson()).toList()
     );
   }

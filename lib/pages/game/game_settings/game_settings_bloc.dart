@@ -102,8 +102,10 @@ class GameSettingsBloc extends Bloc<GameSettingsEvent, GameSettingsState> {
             _categoriesSubscription = _getCategoriesUpdates.invoke(state.gameId).listen((cats) {
               add(GameSettingsEvent.categoriesUpdateReceived(cats));
             });
-            _ongoingRoundSubscription = _getOngoingRoundUpdates.invoke(state.gameId).listen((pair) {
-              add(GameSettingsEvent.roundStarted());
+            _ongoingRoundSubscription = _getOngoingRoundUpdates.invoke(state.gameId).listen((round) {
+              if (round != null) {
+                add(GameSettingsEvent.roundStarted());
+              }
             });
           },
           addedCategory: (newCategory) async* {

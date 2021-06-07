@@ -30,7 +30,7 @@ abstract class GameRepository {
 
   Future<void> saveOngoingRound(String gameId, OngoingRound ongoingRound);
 
-  Stream<OngoingRound> getOngoingRoundUpdates(String gameId);
+  Stream<OngoingRound?> getOngoingRoundUpdates(String gameId);
 
   Future<OngoingRound> getOngoingRound(String gameId);
 

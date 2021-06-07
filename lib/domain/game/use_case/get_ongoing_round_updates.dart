@@ -8,7 +8,7 @@ class GetOngoingRoundUpdates {
 
   GetOngoingRoundUpdates(this._gameRepository);
 
-  Stream<OngoingRound> invoke(String gameId) {
+  Stream<OngoingRound?> invoke(String gameId) {
     return _gameRepository.getOngoingRoundUpdates(gameId);
   }
 }
