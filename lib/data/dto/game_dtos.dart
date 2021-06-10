@@ -43,7 +43,6 @@ class OngoingRoundDTO with _$OngoingRoundDTO {
 class RoundDTO with _$RoundDTO {
   @JsonSerializable(explicitToJson: true)
   factory RoundDTO(
-      String letter,
       @JsonKey(name: "first_to_finish") String? firstToFinish,
       @JsonKey(name: "players_words") Map<String, List<WordDTO>> playersWords
   ) = _RoundDTO;

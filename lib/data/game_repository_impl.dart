@@ -5,6 +5,7 @@ import 'package:findtheword/domain/common/player.dart';
 import 'package:findtheword/domain/game/game.dart';
 import 'package:findtheword/domain/game/game_repository.dart';
 import 'package:findtheword/domain/game/ongoing_round.dart';
+import 'package:findtheword/domain/game/round.dart';
 import 'package:findtheword/domain/game/word.dart';
 import 'package:findtheword/firebase/db_wrapper.dart';
 
@@ -109,6 +110,24 @@ class GameRepositoryImpl implements GameRepository {
         "games/$gameId/rounds/$letter/players_words/$playerId",
         words.map((word) => WordDTO(word.category, word.word, word.valid, "").toJson()).toList()
     );
+  }
+
+  @override
+  Stream<Round> getAllRoundDataUpdates(String gameId, String letter) {
+    return _dbWrapper.onValue("/games/$gameId/rounds/$letter").map((json) {
+      final dto = RoundDTO.fromJson(json as Map<String, dynamic>);
+      return roundFromDto(letter, dto);
+    });
+  }
+
+  @override
+  Stream<int?> getNextReviewedCategoryUpdates(String gameId, String letter) {
+    return _dbWrapper.onValue("/games/$gameId/rounds/$letter/nextReviewedCategory").map((index) => index as int?);
+  }
+
+  @override
+  Future<void> setNextReviewedCategory(String gameId, String letter, int categoryIndex) {
+    return _dbWrapper.set("/games/$gameId/rounds/$letter/nextReviewedCategory", categoryIndex);
   }
 
 }
