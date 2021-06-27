@@ -10,7 +10,14 @@ import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
 import 'package:findtheword/domain/game/use_case/change_settings.dart';
 import 'package:findtheword/domain/game/use_case/create_game.dart';
 import 'package:findtheword/domain/game/use_case/delete_category.dart';
+import 'package:findtheword/domain/game/use_case/finalize_round.dart';
 import 'package:findtheword/domain/game/use_case/finish_round.dart';
+import 'package:findtheword/domain/game/use_case/get_all_round_data_updates.dart';
+import 'package:findtheword/domain/game/use_case/get_next_reviewed_category_updates.dart';
+import 'package:findtheword/domain/game/use_case/get_ongoing_round.dart';
+import 'package:findtheword/domain/game/use_case/get_players.dart';
+import 'package:findtheword/domain/game/use_case/save_next_reviewed_category.dart';
+import 'package:findtheword/domain/game/use_case/save_round_data.dart';
 import 'package:findtheword/domain/game/use_case/finish_round_early.dart';
 import 'package:findtheword/domain/game/use_case/get_categories.dart';
 import 'package:findtheword/domain/game/use_case/get_categories_updates.dart';
@@ -84,7 +91,9 @@ class Injector {
 
   IsOtherPlayerFinishing get isOtherPlayerFinishing => _getCached(() => IsOtherPlayerFinishing(userIdRepository));
 
-  FinishRound get finishRound => _getCached(() => FinishRound(gameRepository, userIdRepository));
+  SaveRoundData get saveRoundData => _getCached(() => SaveRoundData(gameRepository, userIdRepository));
+
+  FinishRound get finishRound => _getCached(() => FinishRound(saveRoundData));
 
   FinishRoundEarly get finishRoundEarly => _getCached(() => FinishRoundEarly(gameRepository, userIdRepository, finishRound));
 
@@ -94,7 +103,14 @@ class Injector {
       (max) => _random.nextInt(max))
   );
 
-  final Random _random = Random();
+  GetOngoingRound get getOngoingRound => _getCached(() => GetOngoingRound(gameRepository));
+  GetNextReviewedCategoryUpdates get getNextReviewedCategoryUpdates => _getCached(() => GetNextReviewedCategoryUpdates(gameRepository));
+  SaveNextReviewedCategory get saveNextReviewedCategory => _getCached(() => SaveNextReviewedCategory(gameRepository));
+  GetAllRoundDataUpdates get getAllRoundDataUpdates => _getCached(() => GetAllRoundDataUpdates(gameRepository));
+  FinalizeRound get finalizeRound => _getCached(() => FinalizeRound(gameRepository));
+  GetPlayers get getPlayers => _getCached(() => GetPlayers(gameRepository));
+
+      final Random _random = Random();
 
   T _getCached<T>(T Function() factory, [String dependencyName = ""]) {
     var key = "${T.toString()}_$dependencyName";

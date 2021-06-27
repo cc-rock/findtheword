@@ -1,8 +1,6 @@
 import 'package:findtheword/domain/game/game_repository.dart';
 import 'package:findtheword/domain/game/ongoing_round.dart';
 
-import '../word.dart';
-
 class GetOngoingRoundUpdates {
   GameRepository _gameRepository;
 

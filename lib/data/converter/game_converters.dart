@@ -26,7 +26,7 @@ Round roundFromDto(String letter, RoundDTO dto) => Round(
       dto.playersWords.entries.map(
               (entry) => MapEntry(
                   entry.key,
-                  entry.value.map((wordDto) => Word(wordDto.category, wordDto.word, wordDto.isValid, wordDto.sameAs)).toList()
+                  entry.value.map((wordDto) => Word(wordDto.category, wordDto.word, wordDto.isValid, wordDto.sameAs, entry.key)).toList()
               )
       )
   )

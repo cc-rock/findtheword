@@ -1,5 +1,6 @@
 import 'package:findtheword/data/converter/common_converters.dart';
 import 'package:findtheword/data/converter/game_converters.dart';
+import 'package:findtheword/data/dto/common_dtos.dart';
 import 'package:findtheword/data/dto/game_dtos.dart';
 import 'package:findtheword/domain/common/player.dart';
 import 'package:findtheword/domain/game/game.dart';
@@ -81,8 +82,9 @@ class GameRepositoryImpl implements GameRepository {
   }
 
   @override
-  Future<void> saveOngoingRound(String gameId, OngoingRound ongoingRound) {
-    return _dbWrapper.set("games/$gameId/ongoing_round", OngoingRoundDTO(ongoingRound.letter, ongoingRound.startTime, ongoingRound.finishingPlayerId).toJson());
+  Future<void> saveOngoingRound(String gameId, OngoingRound? ongoingRound) {
+    final Map<String, dynamic>? json = ongoingRound != null ? OngoingRoundDTO(ongoingRound.letter, ongoingRound.startTime, ongoingRound.finishingPlayerId).toJson() : null;
+    return _dbWrapper.set("games/$gameId/ongoing_round", json);
   }
 
   @override
@@ -108,7 +110,7 @@ class GameRepositoryImpl implements GameRepository {
   Future<void> saveRoundData(String gameId, String playerId, String letter, List<Word> words) {
     return _dbWrapper.set(
         "games/$gameId/rounds/$letter/players_words/$playerId",
-        words.map((word) => WordDTO(word.category, word.word, word.valid, "").toJson()).toList()
+        words.map((word) => WordDTO(word.category, word.word, word.valid, word.sameAs).toJson()).toList()
     );
   }
 
@@ -128,6 +130,20 @@ class GameRepositoryImpl implements GameRepository {
   @override
   Future<void> setNextReviewedCategory(String gameId, String letter, int categoryIndex) {
     return _dbWrapper.set("/games/$gameId/rounds/$letter/nextReviewedCategory", categoryIndex);
+  }
+
+  @override
+  Future<void> saveRoundFirstToFinish(String gameId, String letter, String? firstToFinish) {
+    return _dbWrapper.set("/games/$gameId/rounds/$letter/first_to_finish", firstToFinish);
+  }
+
+  @override
+  Future<List<Player>> getPlayers(String gameId) async {
+    String admin = (await _dbWrapper.once("/games/$gameId/admin")) as String;
+    Iterable<MapEntry<String, PlayerDTO>> dtos = await _dbWrapper.once("/games/$gameId/players").then((json) {
+      return (json as Map<String, dynamic>).entries.map((entry) => MapEntry(entry.key, PlayerDTO.fromJson(entry.value as Map<String, dynamic>)));
+    });
+    return playersFromDTOs(Map.fromEntries(dtos), admin);
   }
 
 }

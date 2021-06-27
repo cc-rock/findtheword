@@ -9,7 +9,9 @@ class Word with _$Word {
     String category,
     String word,
     bool valid,
-    String sameAs
+    String sameAs,
+    [@Default("") String playerId,
+    @Default(0) int numDuplicates]
   ) = _Word;
   factory Word.fromJson(Map<String, dynamic> json) => _$WordFromJson(json);
 }

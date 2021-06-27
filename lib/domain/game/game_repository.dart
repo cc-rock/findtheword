@@ -29,7 +29,7 @@ abstract class GameRepository {
 
   Future<void> saveSettings(String gameId, GameSettings settings);
 
-  Future<void> saveOngoingRound(String gameId, OngoingRound ongoingRound);
+  Future<void> saveOngoingRound(String gameId, OngoingRound? ongoingRound);
 
   Stream<OngoingRound?> getOngoingRoundUpdates(String gameId);
 
@@ -42,5 +42,9 @@ abstract class GameRepository {
   Stream<int?> getNextReviewedCategoryUpdates(String gameId, String letter);
 
   Stream<Round> getAllRoundDataUpdates(String gameId, String letter);
+
+  Future<void> saveRoundFirstToFinish(String gameId, String letter, String? firstToFinish);
+
+  Future<List<Player>> getPlayers(String gameId);
 
 }
