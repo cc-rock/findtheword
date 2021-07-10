@@ -25,7 +25,8 @@ class ReviewRoundEvent with _$ReviewRoundEvent {
   factory ReviewRoundEvent.start() = ReviewRoundStart;
   factory ReviewRoundEvent.nextCategoryReceived(int? nextCategory) = NextCategoryReceived;
   factory ReviewRoundEvent.roundDataReceived(Round round) = RoundDataReceived;
-  factory ReviewRoundEvent.wordEdited(String playerId, bool valid, String sameAs) = WordEdited;
+  factory ReviewRoundEvent.wordValidEdited(String playerId, bool valid) = WordValidEdited;
+  factory ReviewRoundEvent.wordSameAsEdited(String playerId, String? otherPlayerId) = WordSameAsEdited;
   factory ReviewRoundEvent.nextClicked() = NextClicked;
 }
 
@@ -45,14 +46,8 @@ class ReviewRoundState with _$ReviewRoundState {
 @freezed
 class RoundReviewRow with _$RoundReviewRow {
   factory RoundReviewRow(String playerId, String playerName, String word, bool valid,
-      String sameAs, List<SameAsChoice> sameAsChoices) = _RoundReviewRow;
+       int? group, int points) = _RoundReviewRow;
   factory RoundReviewRow.fromJson(Map<String, dynamic> json) => _$RoundReviewRowFromJson(json);
-}
-
-@freezed
-class SameAsChoice with _$SameAsChoice {
-  factory SameAsChoice(String id, String label) = _SameAsChoice;
-  factory SameAsChoice.fromJson(Map<String, dynamic> json) => _$SameAsChoiceFromJson(json);
 }
 
 class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
@@ -130,16 +125,28 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
         _roundData = round;
         return _getNewState();
       },
-      wordEdited: (playerId, valid, sameAs) async* {
+      wordValidEdited: (playerId, valid) async* {
         String category = _getCategories()[_currentCategory!];
         _saveRoundData.invoke(state.gameId, _ongoingRound.letter, _roundData!.playersWords[playerId]!.map((word) {
           if (word.category == category) {
-            return word.copyWith(valid: valid, sameAs: sameAs);
+            return word.copyWith(valid: valid);
           } else {
             return word;
           }
         }).toList(), playerId);
       },
+        wordSameAsEdited: (playerId, otherPlayerId) async* {
+          String category = _getCategories()[_currentCategory!];
+          if (otherPlayerId == null) {
+            // saveAllRoundData(_setGroup(_roundData, _category, playerId, 0))
+          } else {
+            // otherGroup = getGroup(_roundData, _category, otherPlayerId!); // if null return next available group
+            // Round newRound = _setGroup(_roundData, _category, playerId, otherGroup);
+            // newRound =  _setGroup(newRound, _category, otherPlayerId, otherGroup);
+            // newRound = _rebuildGroups(newRound)
+            // saveAllRoundData(newRound);
+          }
+        },
       nextClicked: () async* {
         int nextCategory = (_currentCategory ?? 0) + 1;
         _saveNextReviewedCategory.invoke(state.gameId, _ongoingRound.letter, nextCategory);
@@ -156,11 +163,9 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
       List<RoundReviewRow> rows = _players.map((player) {
         Word word = _roundData!.playersWords[player.id]![_currentCategory!];
         return RoundReviewRow(
-          player.id, player.name, word.word, word.valid, word.sameAs, []
+          player.id, player.name, word.word, word.valid, word.group, 0
         );
       }).toList();
-      List<SameAsChoice> sameAsChoices = rows.where((row) => row.sameAs.isEmpty).map((row) => SameAsChoice(row.playerId, row.word)).toList();
-      rows = rows.map((row) => row.copyWith(sameAsChoices: sameAsChoices.where((choice) => choice.id != row.playerId).toList())).toList();
       String category = _getCategories()[_currentCategory!];
       yield ReviewRoundState(state.gameId, false, category, rows, false);
     }

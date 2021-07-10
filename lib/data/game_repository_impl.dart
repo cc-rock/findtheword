@@ -110,7 +110,7 @@ class GameRepositoryImpl implements GameRepository {
   Future<void> saveRoundData(String gameId, String playerId, String letter, List<Word> words) {
     return _dbWrapper.set(
         "games/$gameId/rounds/$letter/players_words/$playerId",
-        words.map((word) => WordDTO(word.category, word.word, word.valid, word.sameAs).toJson()).toList()
+        words.map((word) => WordDTO(word.category, word.word, word.valid, word.group).toJson()).toList()
     );
   }
 

@@ -99,7 +99,7 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
         roundStarted: (letter, startTime) async* {
           List<String> categories = await _getCategories.invoke(state.gameId);
           GameSettings settings = await _getGameSettings.invoke(state.gameId);
-          List<Word> words = categories.map((cat) => Word(cat, "", false, "")).toList();
+          List<Word> words = categories.map((cat) => Word(cat, "", false, 0)).toList();
           int currentTime = _getCurrentTimeMillis();
           int nextSecond = ((currentTime ~/ 1000) + 1) * 1000;
           int toNextSecond = nextSecond - currentTime;
@@ -137,7 +137,7 @@ class PlayRoundBloc extends Bloc<PlayRoundEvent, PlayRoundState> {
           yield state.copyWith(
             words: state.words.map((word) =>
                word.category == category ? Word(
-                 category, newWord, _validateWord(newWord, state.letter), ""
+                 category, newWord, _validateWord(newWord, state.letter), 0
                ) : word
             ).toList()
           );

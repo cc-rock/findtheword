@@ -51,6 +51,6 @@ class RoundDTO with _$RoundDTO {
 
 @freezed
 class WordDTO with _$WordDTO {
-  factory WordDTO(String category, String word, @JsonKey(name: "is_valid")  isValid, @JsonKey(name: "same_as") String sameAs) = _WordDTO;
+  factory WordDTO(String category, String word, @JsonKey(name: "is_valid")  isValid, int group) = _WordDTO;
   factory WordDTO.fromJson(Map<String, dynamic> json) => _$WordDTOFromJson(json);
 }

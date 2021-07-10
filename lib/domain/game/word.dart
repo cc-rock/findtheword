@@ -9,7 +9,7 @@ class Word with _$Word {
     String category,
     String word,
     bool valid,
-    String sameAs,
+    int group,
     [@Default("") String playerId,
     @Default(0) int numDuplicates]
   ) = _Word;
