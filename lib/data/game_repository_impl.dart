@@ -146,4 +146,9 @@ class GameRepositoryImpl implements GameRepository {
     return playersFromDTOs(Map.fromEntries(dtos), admin);
   }
 
+  @override
+  Future<void> saveAllRoundData(String gameId, Round round) {
+    return _dbWrapper.set("/games/$gameId/rounds/${round.letter}", roundToDTO(round).toJson());
+  }
+
 }

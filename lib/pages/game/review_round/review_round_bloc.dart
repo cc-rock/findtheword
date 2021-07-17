@@ -140,7 +140,7 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
           if (otherPlayerId == null) {
             // saveAllRoundData(_setGroup(_roundData, _category, playerId, 0))
           } else {
-            // otherGroup = getGroup(_roundData, _category, otherPlayerId!); // if null return next available group
+            // otherGroup = _getGroup(_roundData, _category, otherPlayerId!); // if null return next available group
             // Round newRound = _setGroup(_roundData, _category, playerId, otherGroup);
             // newRound =  _setGroup(newRound, _category, otherPlayerId, otherGroup);
             // newRound = _rebuildGroups(newRound)
@@ -169,6 +169,37 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
       String category = _getCategories()[_currentCategory!];
       yield ReviewRoundState(state.gameId, false, category, rows, false);
     }
+  }
+
+  Round _setGroup(Round round, String category, String playerId, int group) {
+    return round.copyWith(
+      playersWords: round.playersWords.map((player, words) =>
+        MapEntry(
+          player,
+          (player == playerId ? words.map(
+             (word) => word.category == category ? word.copyWith(group: group) : word
+          ) : words).toList()
+        )
+      )
+    );
+  }
+
+  int _getGroup(Round round, String category, String playerId) {
+    int foundGroup = 0;
+    int maxGroup = 0;
+    round.playersWords.forEach((key, value) {
+      value.forEach((word) {
+        if (word.category == category) {
+          if (key == playerId) {
+            foundGroup = word.group;
+          }
+          if (word.group > maxGroup) {
+            maxGroup = word.group;
+          }
+        }
+      });
+    });
+    return foundGroup != 0 ? foundGroup : maxGroup + 1;
   }
 
   factory ReviewRoundBloc.fromContext(BuildContext context, ReviewRoundState initialState) {

@@ -7,11 +7,7 @@ class ComputeNumDuplicates {
     Map<String, int> numDup = {};
     inputRound.playersWords.values.forEach((list) {
       list.forEach((word) {
-        String tag = _getTag(word);
-        _ensureEntry(tag, numDup);
-        if (word.sameAs.isNotEmpty) {
-          _incrementEntry("${word.sameAs}-${word.category}", numDup);
-        }
+        _incrementEntry(word, numDup);
       });
     });
     Iterable<MapEntry<String, List<Word>>> newPlayersWords = inputRound.playersWords.entries.map(
@@ -21,11 +17,7 @@ class ComputeNumDuplicates {
   }
 
   int _getNumDuplicates(Word word, Map<String, int> numDup) {
-    int numDuplicates = numDup[_getTag(word)]!;
-    if (numDuplicates == 0) {
-      numDuplicates = numDup["${word.sameAs}-${word.category}"]!;
-    }
-    return numDuplicates;
+    return numDup[_getTag(word)]!;
   }
 
   void _ensureEntry(String tag, Map<String, int> numDup) {
@@ -34,11 +26,12 @@ class ComputeNumDuplicates {
     }
   }
 
-  void _incrementEntry(String tag, Map<String, int> numDup) {
+  void _incrementEntry(Word word, Map<String, int> numDup) {
+    final tag = _getTag(word);
     _ensureEntry(tag, numDup);
     numDup[tag] = numDup[tag]! + 1;
   }
 
-  String _getTag(Word word) => "${word.playerId}-${word.category}";
+  String _getTag(Word word) => "${word.group}-${word.category}";
 
 }

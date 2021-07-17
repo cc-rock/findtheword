@@ -32,3 +32,15 @@ Round roundFromDto(String letter, RoundDTO dto) => Round(
   )
 );
 
+RoundDTO roundToDTO(Round round) => RoundDTO(
+    round.firstToFinish,
+    round.playersWords.map(
+      (key, words) => MapEntry(
+          key,
+          words.map((word) => WordDTO(
+              word.category, word.word, word.valid, word.group
+          )).toList()
+      )
+    )
+);
+
