@@ -151,4 +151,12 @@ class GameRepositoryImpl implements GameRepository {
     return _dbWrapper.set("/games/$gameId/rounds/${round.letter}", roundToDTO(round).toJson());
   }
 
+  @override
+  Future<List<Round>> getAllRounds(String gameId) {
+    return _dbWrapper.once("/games/$gameId/rounds").then((rounds) {
+      final roundsJson = rounds as Map<String, dynamic>;
+      return roundsJson.entries.map((entry) => roundFromDto(entry.key, RoundDTO.fromJson(entry.value as Map<String, dynamic>))).toList();
+    });
+  }
+
 }

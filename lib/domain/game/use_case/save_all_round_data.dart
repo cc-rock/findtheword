@@ -3,10 +3,10 @@ import 'package:findtheword/domain/game/game_repository.dart';
 
 import '../round.dart';
 
-class SaveRoundData {
+class SaveAllRoundData {
   GameRepository _gameRepository;
 
-  SaveRoundData(this._gameRepository);
+  SaveAllRoundData(this._gameRepository);
 
   Future<Result<void>> invoke(String gameId, Round round) async {
     try {

@@ -49,4 +49,6 @@ abstract class GameRepository {
 
   Future<void> saveAllRoundData(String gameId, Round round);
 
+  Future<List<Round>> getAllRounds(String gameId);
+
 }

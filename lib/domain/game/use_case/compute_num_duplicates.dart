@@ -29,7 +29,9 @@ class ComputeNumDuplicates {
   void _incrementEntry(Word word, Map<String, int> numDup) {
     final tag = _getTag(word);
     _ensureEntry(tag, numDup);
-    numDup[tag] = numDup[tag]! + 1;
+    if (word.valid) {
+      numDup[tag] = numDup[tag]! + 1;
+    }
   }
 
   String _getTag(Word word) => "${word.group}-${word.category}";

@@ -5,11 +5,13 @@ import 'package:findtheword/domain/common/player.dart';
 import 'package:findtheword/domain/game/ongoing_round.dart';
 import 'package:findtheword/domain/game/round.dart';
 import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
+import 'package:findtheword/domain/game/use_case/compute_word_points.dart';
 import 'package:findtheword/domain/game/use_case/finalize_round.dart';
 import 'package:findtheword/domain/game/use_case/get_all_round_data_updates.dart';
 import 'package:findtheword/domain/game/use_case/get_next_reviewed_category_updates.dart';
 import 'package:findtheword/domain/game/use_case/get_ongoing_round.dart';
 import 'package:findtheword/domain/game/use_case/get_players.dart';
+import 'package:findtheword/domain/game/use_case/save_all_round_data.dart';
 import 'package:findtheword/domain/game/use_case/save_next_reviewed_category.dart';
 import 'package:findtheword/domain/game/use_case/save_round_data.dart';
 import 'package:findtheword/domain/game/word.dart';
@@ -60,6 +62,8 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
   final GetAllRoundDataUpdates _getAllRoundDataUpdates;
   final SaveRoundData _saveRoundData;
   final FinalizeRound _finalizeRound;
+  final SaveAllRoundData _saveAllRoundData;
+  final ComputeWordPoints _computeWordPoints;
 
   StreamSubscription? _nextCategorySubscription;
   StreamSubscription? _roundDataSubscription;
@@ -81,7 +85,8 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
       ReviewRoundState initialState, this._amIGameAdmin, this._getPlayers,
       this._getOngoingRound, this._getNextReviewedCategoryUpdates,
       this._saveNextReviewedCategory, this._getAllRoundDataUpdates,
-      this._saveRoundData, this._finalizeRound
+      this._saveRoundData, this._finalizeRound, this._saveAllRoundData,
+      this._computeWordPoints
   ) : super(initialState) {
     add(ReviewRoundEvent.start());
   }
@@ -138,13 +143,12 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
         wordSameAsEdited: (playerId, otherPlayerId) async* {
           String category = _getCategories()[_currentCategory!];
           if (otherPlayerId == null) {
-            // saveAllRoundData(_setGroup(_roundData, _category, playerId, 0))
+            _saveAllRoundData.invoke(state.gameId, _setGroup(_roundData!, category, playerId, 0));
           } else {
-            // otherGroup = _getGroup(_roundData, _category, otherPlayerId!); // if null return next available group
-            // Round newRound = _setGroup(_roundData, _category, playerId, otherGroup);
-            // newRound =  _setGroup(newRound, _category, otherPlayerId, otherGroup);
-            // newRound = _rebuildGroups(newRound)
-            // saveAllRoundData(newRound);
+            int otherGroup = _getGroup(_roundData!, category, otherPlayerId); // if null return next available group
+            Round newRound = _setGroup(_roundData!, category, playerId, otherGroup);
+            newRound =  _setGroup(newRound, category, otherPlayerId, otherGroup);
+            _saveAllRoundData.invoke(state.gameId, newRound);
           }
         },
       nextClicked: () async* {
@@ -163,7 +167,7 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
       List<RoundReviewRow> rows = _players.map((player) {
         Word word = _roundData!.playersWords[player.id]![_currentCategory!];
         return RoundReviewRow(
-          player.id, player.name, word.word, word.valid, word.group, 0
+          player.id, player.name, word.word, word.valid, word.group, _computeWordPoints.invoke(word, _players.length)
         );
       }).toList();
       String category = _getCategories()[_currentCategory!];
@@ -213,7 +217,9 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
       injector.saveNextReviewedCategory,
       injector.getAllRoundDataUpdates,
       injector.saveRoundData,
-      injector.finalizeRound
+      injector.finalizeRound,
+      injector.saveAllRoundData,
+      injector.computeWordPoints
     );
   }
 
