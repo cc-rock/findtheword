@@ -28,7 +28,7 @@ class ReviewRoundEvent with _$ReviewRoundEvent {
   factory ReviewRoundEvent.nextCategoryReceived(int? nextCategory) = NextCategoryReceived;
   factory ReviewRoundEvent.roundDataReceived(Round round) = RoundDataReceived;
   factory ReviewRoundEvent.wordValidEdited(String playerId, bool valid) = WordValidEdited;
-  factory ReviewRoundEvent.wordSameAsEdited(String playerId, String? otherPlayerId) = WordSameAsEdited;
+  factory ReviewRoundEvent.wordSameAsEdited(String playerId, int group) = WordSameAsEdited;
   factory ReviewRoundEvent.nextClicked() = NextClicked;
 }
 
@@ -37,9 +37,11 @@ class ReviewRoundState with _$ReviewRoundState {
   @JsonSerializable(explicitToJson: true)
   factory ReviewRoundState(
     String gameId,
+    bool admin,
     bool loading,
     String category,
     List<RoundReviewRow> rows,
+    List<RoundReviewGroup> groups,
     bool goToScoreboard
   ) = _ReviewRoundState;
   factory ReviewRoundState.fromJson(Map<String, dynamic> json) => _$ReviewRoundStateFromJson(json);
@@ -50,6 +52,12 @@ class RoundReviewRow with _$RoundReviewRow {
   factory RoundReviewRow(String playerId, String playerName, String word, bool valid,
        int? group, int points) = _RoundReviewRow;
   factory RoundReviewRow.fromJson(Map<String, dynamic> json) => _$RoundReviewRowFromJson(json);
+}
+
+@freezed
+class RoundReviewGroup with _$RoundReviewGroup {
+  factory RoundReviewGroup(int group, String label) = _RoundReviewGroup;
+  factory RoundReviewGroup.fromJson(Map<String, dynamic> json) => _$RoundReviewGroupFromJson(json);
 }
 
 class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
@@ -128,26 +136,36 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
       },
       roundDataReceived: (round) {
         _roundData = round;
-        return _getNewState();
+        if (!_rebuildGroups()) {
+          return _getNewState();
+        } else {
+          _saveAllRoundData.invoke(state.gameId, _roundData!);
+          return Stream.empty();
+        }
       },
       wordValidEdited: (playerId, valid) async* {
         String category = _getCategories()[_currentCategory!];
         _saveRoundData.invoke(state.gameId, _ongoingRound.letter, _roundData!.playersWords[playerId]!.map((word) {
           if (word.category == category) {
-            return word.copyWith(valid: valid);
+            return word.copyWith(valid: valid, group: 0);
           } else {
             return word;
           }
         }).toList(), playerId);
       },
-        wordSameAsEdited: (playerId, otherPlayerId) async* {
+        wordSameAsEdited: (playerId, group) async* {
           String category = _getCategories()[_currentCategory!];
-          if (otherPlayerId == null) {
-            _saveAllRoundData.invoke(state.gameId, _setGroup(_roundData!, category, playerId, 0));
+          if (group == 0) {
+            int maxGroup = 0;
+            for(List<Word> words in _roundData!.playersWords.values) {
+              int group = words[_currentCategory!].group;
+              if (group > maxGroup) {
+                maxGroup = group;
+              }
+            }
+            _saveAllRoundData.invoke(state.gameId, _setGroup(_roundData!, category, playerId, maxGroup + 1));
           } else {
-            int otherGroup = _getGroup(_roundData!, category, otherPlayerId); // if null return next available group
-            Round newRound = _setGroup(_roundData!, category, playerId, otherGroup);
-            newRound =  _setGroup(newRound, category, otherPlayerId, otherGroup);
+            Round newRound = _setGroup(_roundData!, category, playerId, group);
             _saveAllRoundData.invoke(state.gameId, newRound);
           }
         },
@@ -163,16 +181,57 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
   }
 
   Stream<ReviewRoundState> _getNewState() async* {
+    Map<int, List<String>> groups = {};
     if (_currentCategory != null && _roundData != null) {
       List<RoundReviewRow> rows = _players.map((player) {
         Word word = _roundData!.playersWords[player.id]![_currentCategory!];
+        if (groups[word.group] == null) {
+          groups[word.group] = [];
+        }
+        groups[word.group]!.add(word.word);
         return RoundReviewRow(
           player.id, player.name, word.word, word.valid, word.group, _computeWordPoints.invoke(word, _players.length)
         );
       }).toList();
+      rows.sort((a, b) => (b.group ?? 0) - (a.group ?? 0));
       String category = _getCategories()[_currentCategory!];
-      yield ReviewRoundState(state.gameId, false, category, rows, false);
+      List<RoundReviewGroup> groupChoices = groups.entries.map(
+              (entry) => RoundReviewGroup(entry.key, entry.value.join(", "))
+      ).toList();
+      yield ReviewRoundState(state.gameId, _admin, false, category, rows, groupChoices, false);
     }
+  }
+
+  bool _rebuildGroups() {
+    Map<String, int> maxGroups = {};
+    bool changed = false;
+    for(List<Word> words in _roundData!.playersWords.values) {
+      for(Word word in words) {
+        int maxGroup = maxGroups[word.category] ?? 0;
+        if (word.group > maxGroup) {
+          maxGroups[word.category] = word.group;
+        }
+      }
+    }
+    _roundData = _roundData!.copyWith(
+        playersWords: _roundData!.playersWords.map((player, words) =>
+            MapEntry(
+                player,
+                words.map(
+                   (word) {
+                     if (word.group == 0) {
+                       changed = true;
+                       int newGroup = (maxGroups[word.category] ?? 0) + 1;
+                       maxGroups[word.category] = newGroup;
+                       return word.copyWith(group: newGroup);
+                     }
+                     return word;
+                   }
+                ).toList()
+            )
+        )
+    );
+    return changed;
   }
 
   Round _setGroup(Round round, String category, String playerId, int group) {
