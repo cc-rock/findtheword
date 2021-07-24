@@ -37,12 +37,11 @@ class ReviewRoundState with _$ReviewRoundState {
   @JsonSerializable(explicitToJson: true)
   factory ReviewRoundState(
     String gameId,
-    bool admin,
-    bool loading,
-    String category,
-    List<RoundReviewRow> rows,
-    List<RoundReviewGroup> groups,
-    bool goToScoreboard
+    [@Default(false) bool admin,
+     @Default(true) bool loading,
+     @Default("") String category,
+     @Default([]) List<RoundReviewRow> rows,
+     @Default(false) bool goToScoreboard]
   ) = _ReviewRoundState;
   factory ReviewRoundState.fromJson(Map<String, dynamic> json) => _$ReviewRoundStateFromJson(json);
 }
@@ -50,7 +49,7 @@ class ReviewRoundState with _$ReviewRoundState {
 @freezed
 class RoundReviewRow with _$RoundReviewRow {
   factory RoundReviewRow(String playerId, String playerName, String word, bool valid,
-       int? group, int points) = _RoundReviewRow;
+       int? group, bool unique, List<RoundReviewGroup> groupChoices, int points) = _RoundReviewRow;
   factory RoundReviewRow.fromJson(Map<String, dynamic> json) => _$RoundReviewRowFromJson(json);
 }
 
@@ -107,7 +106,7 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
         _admin = (await _amIGameAdmin.invoke(state.gameId)).when(success: (value) => value, error: (_) => false);
         _players = await _getPlayers.invoke(state.gameId);
         _ongoingRound = (await _getOngoingRound.invoke(state.gameId))!;
-        _nextCategorySubscription = _getNextReviewedCategoryUpdates.invoke(state.gameId, _ongoingRound.letter).listen((nextCategory) {
+        _nextCategorySubscription = _getNextReviewedCategoryUpdates.invoke(state.gameId).listen((nextCategory) {
           add(ReviewRoundEvent.nextCategoryReceived(nextCategory));
         });
         _roundDataSubscription = _getAllRoundDataUpdates.invoke(state.gameId, _ongoingRound.letter).listen((round) {
@@ -125,23 +124,33 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
             _currentCategory = nextCategory;
             return _getNewState();
           } else {
-            return Stream.fromFuture(_finalizeRound.invoke(state.gameId).then((_) => state.copyWith(goToScoreboard: true)));
+            return Stream.fromFuture(
+                (_admin ? _finalizeRound.invoke(state.gameId) : Future.value())
+                    .then((_) => state.copyWith(goToScoreboard: true))
+            );
           }
         } else {
           if (_admin) {
-            _saveNextReviewedCategory.invoke(state.gameId, _ongoingRound.letter, 0);
+            _saveNextReviewedCategory.invoke(state.gameId, 0);
           }
           return Stream.empty();
         }
       },
       roundDataReceived: (round) {
-        _roundData = round;
-        if (!_rebuildGroups()) {
-          return _getNewState();
-        } else {
-          _saveAllRoundData.invoke(state.gameId, _roundData!);
+        if (round.playersWords.keys.length < _players.length) {
           return Stream.empty();
         }
+        _roundData = round;
+        if (_currentCategory != null) {
+          if (!_rebuildGroups()) {
+            return _getNewState();
+          } else {
+            if (_admin) {
+              _saveAllRoundData.invoke(state.gameId, _roundData!);
+            }
+          }
+        }
+        return Stream.empty();
       },
       wordValidEdited: (playerId, valid) async* {
         String category = _getCategories()[_currentCategory!];
@@ -155,7 +164,7 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
       },
         wordSameAsEdited: (playerId, group) async* {
           String category = _getCategories()[_currentCategory!];
-          if (group == 0) {
+          if (group == -1) {
             int maxGroup = 0;
             for(List<Word> words in _roundData!.playersWords.values) {
               int group = words[_currentCategory!].group;
@@ -171,7 +180,7 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
         },
       nextClicked: () async* {
         int nextCategory = (_currentCategory ?? 0) + 1;
-        _saveNextReviewedCategory.invoke(state.gameId, _ongoingRound.letter, nextCategory);
+        _saveNextReviewedCategory.invoke(state.gameId, nextCategory);
       }
     );
   }
@@ -181,25 +190,34 @@ class ReviewRoundBloc extends Bloc<ReviewRoundEvent, ReviewRoundState> {
   }
 
   Stream<ReviewRoundState> _getNewState() async* {
-    Map<int, List<String>> groups = {};
     if (_currentCategory != null && _roundData != null) {
+      Map<int, List<String>> groupWords = {};
+      for(final player in _players) {
+        Word word = _roundData!.playersWords[player.id]![_currentCategory!];
+        if (groupWords[word.group] == null) {
+          groupWords[word.group] = [];
+        }
+        groupWords[word.group]!.add(word.word);
+      }
+      List<RoundReviewGroup> groupChoices =  [
+        RoundReviewGroup(-1, "Unique"),
+        ...groupWords.entries.map((entry) => RoundReviewGroup(entry.key, entry.value.join(", ")))];
       List<RoundReviewRow> rows = _players.map((player) {
         Word word = _roundData!.playersWords[player.id]![_currentCategory!];
-        if (groups[word.group] == null) {
-          groups[word.group] = [];
-        }
-        groups[word.group]!.add(word.word);
         return RoundReviewRow(
-          player.id, player.name, word.word, word.valid, word.group, _computeWordPoints.invoke(word, _players.length)
+          player.id, player.name, word.word, word.valid, word.group, word.numDuplicates <= 1,
+            groupChoices.where((item) => item.group != word.group || word.numDuplicates > 1).toList(),
+            _computeWordPoints.invoke(word, _players.length)
         );
       }).toList();
-      rows.sort((a, b) => (b.group ?? 0) - (a.group ?? 0));
+      rows.sort(_sortRows);
       String category = _getCategories()[_currentCategory!];
-      List<RoundReviewGroup> groupChoices = groups.entries.map(
-              (entry) => RoundReviewGroup(entry.key, entry.value.join(", "))
-      ).toList();
-      yield ReviewRoundState(state.gameId, _admin, false, category, rows, groupChoices, false);
+      yield ReviewRoundState(state.gameId, _admin, false, category, rows, false);
     }
+  }
+
+  int _sortRows(RoundReviewRow a, RoundReviewRow b) {
+    return a.points == b.points ? (a.group ?? 0) - (b.group ?? 0) : (b.points - a.points);
   }
 
   bool _rebuildGroups() {

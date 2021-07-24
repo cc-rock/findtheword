@@ -30,7 +30,7 @@ class GetScoreboard {
     return Scoreboard(
         players.map(
                 (player) => ScoreboardRow(player.id, player.name, scores[player.id]!)
-        ).toList()..sort((row1, row2) => row1.points - row2.points)
+        ).toList()..sort((row1, row2) => row2.points - row1.points)
     );
   }
 }

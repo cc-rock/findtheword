@@ -1,3 +1,4 @@
+import 'package:findtheword/app/navigation/navigation_cubit.dart';
 import 'package:findtheword/pages/game/review_round/review_round_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -26,8 +27,15 @@ class ReviewRoundPage extends StatelessWidget {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(state.category),
                           ),
-                          ...state.rows.map((row) => _rowWidget(context, row, state.admin, state.groups)),
-                          _nextButton(context, state.admin)
+                          ...state.rows.map((row) => _rowWidget(context, row, state.admin)),
+                          _nextButton(context, state.admin),
+                          BlocListener<ReviewRoundBloc, ReviewRoundState>(
+                            listener: (context, state) {
+                              BlocProvider.of<NavigationCubit>(context).goToScoreboard(state.gameId);
+                            },
+                            listenWhen: (prev, next) => next.goToScoreboard,
+                            child: Container(),
+                          )
                         ],
                       );
                     }
@@ -50,7 +58,7 @@ class ReviewRoundPage extends StatelessWidget {
     }
   }
 
-  Widget _rowWidget(BuildContext context, RoundReviewRow row, bool admin, List<RoundReviewGroup> groups) {
+  Widget _rowWidget(BuildContext context, RoundReviewRow row, bool admin) {
     final validText = Text(row.valid ? "Valid" : "Not valid");
     return Row(
       children: [
@@ -60,10 +68,11 @@ class ReviewRoundPage extends StatelessWidget {
         }) : validText,
         Text("Same as: "),
         admin ? DropdownButton<int>(
-            value: row.group,
-            items: groups.map((grp) => DropdownMenuItem(child: Text(grp.label), value: grp.group,)).toList(),
-            onChanged: (value) {BlocProvider.of<ReviewRoundBloc>(context).add(ReviewRoundEvent.wordSameAsEdited(row.playerId, value!)); },
-        ) : Container()
+            value: row.unique ? -1 : row.group,
+            items: row.groupChoices.map((grp) => DropdownMenuItem(child: Text(grp.label), value: grp.group,)).toList(),
+            onChanged: (value) {BlocProvider.of<ReviewRoundBloc>(context).add(ReviewRoundEvent.wordSameAsEdited(row.playerId, value ?? -1)); },
+        ) : Text(row.unique ? "Unique" : row.groupChoices.firstWhere((grp) => grp.group == row.group).label),
+        Text("Points: ${row.points}")
       ],
     );
   }

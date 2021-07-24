@@ -5,7 +5,7 @@ class SaveNextReviewedCategory {
 
   SaveNextReviewedCategory(this._gameRepository);
 
-  Future<void> invoke(String gameId, String letter, int categoryIndex) {
-    return _gameRepository.setNextReviewedCategory(gameId, letter, categoryIndex);
+  Future<void> invoke(String gameId, int? categoryIndex) {
+    return _gameRepository.setNextReviewedCategory(gameId, categoryIndex);
   }
 }

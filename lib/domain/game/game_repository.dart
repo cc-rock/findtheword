@@ -37,9 +37,9 @@ abstract class GameRepository {
 
   Future<void> saveRoundData(String gameId, String playerId, String letter, List<Word> words);
 
-  Future<void> setNextReviewedCategory(String gameId, String letter, int categoryIndex);
+  Future<void> setNextReviewedCategory(String gameId, int? categoryIndex);
 
-  Stream<int?> getNextReviewedCategoryUpdates(String gameId, String letter);
+  Stream<int?> getNextReviewedCategoryUpdates(String gameId);
 
   Stream<Round> getAllRoundDataUpdates(String gameId, String letter);
 

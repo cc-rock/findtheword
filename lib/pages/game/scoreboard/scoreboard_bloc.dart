@@ -5,6 +5,7 @@ import 'package:findtheword/domain/game/scoreboard.dart';
 import 'package:findtheword/domain/game/use_case/am_i_game_admin.dart';
 import 'package:findtheword/domain/game/use_case/get_ongoing_round_updates.dart';
 import 'package:findtheword/domain/game/use_case/get_scoreboard.dart';
+import 'package:findtheword/domain/game/use_case/save_next_reviewed_category.dart';
 import 'package:findtheword/domain/game/use_case/start_round.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,12 +44,13 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
   final AmIGameAdmin _amIGameAdmin;
   final StartRound _startRound;
   final GetOngoingRoundUpdates _getOngoingRoundUpdates;
+  final SaveNextReviewedCategory _saveNextReviewedCategory;
 
   StreamSubscription? subscription;
 
   ScoreboardBloc(ScoreboardState initialState,
       this._getScoreboard, this._amIGameAdmin, this._startRound,
-      this._getOngoingRoundUpdates) : super(initialState) {
+      this._getOngoingRoundUpdates, this._saveNextReviewedCategory) : super(initialState) {
     add(ScoreboardEvent.start());
   }
 
@@ -76,8 +78,15 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
           _startRound.invoke(state.gameId);
         },
         finishGameClicked: () async* {
+          if (state.admin) {
+            await _saveNextReviewedCategory.invoke(state.gameId, null);
+          }
+          yield state.copyWith(navAction: ScoreboardNavAction.goToHome);
         },
         goToNextRound: () async* {
+          if (state.admin) {
+            await _saveNextReviewedCategory.invoke(state.gameId, null);
+          }
           yield state.copyWith(navAction: ScoreboardNavAction.goToNextRound);
         },
         gameFinished: () async* {
@@ -93,7 +102,8 @@ class ScoreboardBloc extends Bloc<ScoreboardEvent, ScoreboardState> {
       injector.getScoreboard,
       injector.amIGameAdmin,
       injector.startRound,
-      injector.getOngoingRoundUpdates
+      injector.getOngoingRoundUpdates,
+      injector.saveNextReviewedCategory
     );
   }
 

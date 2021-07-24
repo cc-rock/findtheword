@@ -7,6 +7,6 @@ class ComputeWordPoints {
     if (!word.valid) {
       return 0;
     }
-    return 10 - max(1, 10 ~/ word.numDuplicates);
+    return max(1, 10 ~/ word.numDuplicates);
   }
 }

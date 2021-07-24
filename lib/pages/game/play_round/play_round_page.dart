@@ -1,3 +1,4 @@
+import 'package:findtheword/app/navigation/navigation_cubit.dart';
 import 'package:findtheword/domain/game/word.dart';
 import 'package:findtheword/pages/game/play_round/play_round_bloc.dart';
 import 'package:flutter/material.dart';
@@ -80,6 +81,13 @@ class PlayRoundPage extends StatelessWidget {
           }
         }
       )),
+      BlocListener<PlayRoundBloc, PlayRoundState>(
+        listener: (context, state) {
+          BlocProvider.of<NavigationCubit>(context).goToRoundReview(state.gameId);
+        },
+        listenWhen: (prev, next) => next.goToRoundReview,
+        child: Container(),
+      )
     ],);
   }
 

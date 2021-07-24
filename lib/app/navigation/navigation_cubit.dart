@@ -2,6 +2,8 @@ import 'package:findtheword/pages/ask_password/ask_password_bloc.dart';
 import 'package:findtheword/pages/create_room/create_room_bloc.dart';
 import 'package:findtheword/pages/game/game_settings/game_settings_bloc.dart';
 import 'package:findtheword/pages/game/play_round/play_round_bloc.dart';
+import 'package:findtheword/pages/game/review_round/review_round_bloc.dart';
+import 'package:findtheword/pages/game/scoreboard/scoreboard_bloc.dart';
 import 'package:findtheword/pages/home/home_page_bloc.dart';
 import 'package:findtheword/pages/join_room/join_room_bloc.dart';
 import 'package:findtheword/pages/wait_for_players/wait_for_players_bloc.dart';
@@ -42,6 +44,14 @@ class NavigationCubit extends Cubit<NavigationState> {
 
   void goToPlayRound(String gameId) {
     emit(NavigationState(PlayRoundState(gameId)));
+  }
+
+  void goToRoundReview(String gameId) {
+    emit(NavigationState(ReviewRoundState(gameId)));
+  }
+
+  void goToScoreboard(String gameId) {
+    emit(NavigationState(ScoreboardState(gameId, false)));
   }
 
 }

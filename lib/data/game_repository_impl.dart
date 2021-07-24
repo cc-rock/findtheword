@@ -123,13 +123,13 @@ class GameRepositoryImpl implements GameRepository {
   }
 
   @override
-  Stream<int?> getNextReviewedCategoryUpdates(String gameId, String letter) {
-    return _dbWrapper.onValue("/games/$gameId/rounds/$letter/nextReviewedCategory").map((index) => index as int?);
+  Stream<int?> getNextReviewedCategoryUpdates(String gameId) {
+    return _dbWrapper.onValue("/games/$gameId/nextReviewedCategory").map((index) => index as int?);
   }
 
   @override
-  Future<void> setNextReviewedCategory(String gameId, String letter, int categoryIndex) {
-    return _dbWrapper.set("/games/$gameId/rounds/$letter/nextReviewedCategory", categoryIndex);
+  Future<void> setNextReviewedCategory(String gameId, int? categoryIndex) {
+    return _dbWrapper.set("/games/$gameId/nextReviewedCategory", categoryIndex);
   }
 
   @override

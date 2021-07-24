@@ -4,6 +4,10 @@ import 'package:findtheword/pages/create_room/create_room_bloc.dart';
 import 'package:findtheword/pages/create_room/create_room_page.dart';
 import 'package:findtheword/pages/game/game_settings/game_settings_bloc.dart';
 import 'package:findtheword/pages/game/play_round/play_round_bloc.dart';
+import 'package:findtheword/pages/game/review_round/review_round_bloc.dart';
+import 'package:findtheword/pages/game/review_round/review_round_page.dart';
+import 'package:findtheword/pages/game/scoreboard/scoreboard_bloc.dart';
+import 'package:findtheword/pages/game/scoreboard/scoreboard_page.dart';
 import 'package:findtheword/pages/home/home_page_bloc.dart';
 import 'package:findtheword/pages/join_room/join_room_bloc.dart';
 import 'package:findtheword/pages/join_room/join_room_page.dart';
@@ -38,6 +42,12 @@ class PageFactory {
     }
     if (pageState is PlayRoundState) {
       return PlayRoundPage(pageState);
+    }
+    if (pageState is ReviewRoundState) {
+      return ReviewRoundPage(pageState);
+    }
+    if (pageState is ScoreboardState) {
+      return ScoreboardPage(pageState);
     }
     throw Exception("Unknown page state");
   }

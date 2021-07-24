@@ -5,7 +5,7 @@ class GetNextReviewedCategoryUpdates {
 
   GetNextReviewedCategoryUpdates(this._gameRepository);
 
-  Stream<int?> invoke(String gameId, String letter) {
-    return _gameRepository.getNextReviewedCategoryUpdates(gameId, letter);
+  Stream<int?> invoke(String gameId) {
+    return _gameRepository.getNextReviewedCategoryUpdates(gameId);
   }
 }
