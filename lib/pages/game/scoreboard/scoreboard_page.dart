@@ -25,9 +25,9 @@ class ScoreboardPage extends StatelessWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text("Scoreboard"),
+                        child: Text("Scoreboard", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
                       ),
-                      ...state.scoreboard!.rows.map((row) => _rowWidget(context, row)),
+                      Expanded(child: ListView(children: state.scoreboard!.rows.map((row) => _rowWidget(context, row)).toList(),)),
                       _buttons(context, state.admin),
                       BlocListener<ScoreboardBloc, ScoreboardState>(
                         listener: (context, state) {
@@ -69,17 +69,23 @@ class ScoreboardPage extends StatelessWidget {
     }
     return Row(
       children: [
-        ElevatedButton(
-            onPressed: () {
-              BlocProvider.of<ScoreboardBloc>(context).add(ScoreboardEvent.nextRoundClicked());
-            },
-            child: Text("Next Round")
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+              onPressed: () {
+                BlocProvider.of<ScoreboardBloc>(context).add(ScoreboardEvent.nextRoundClicked());
+              },
+              child: Text("Next Round")
+          ),
         ),
-        ElevatedButton(
-            onPressed: () {
-                BlocProvider.of<ScoreboardBloc>(context).add(ScoreboardEvent.finishGameClicked());
-            },
-            child: Text("Next Round")
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+              onPressed: () {
+                  BlocProvider.of<ScoreboardBloc>(context).add(ScoreboardEvent.finishGameClicked());
+              },
+              child: Text("Finish Game")
+          ),
         )
       ],
     );

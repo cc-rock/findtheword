@@ -20,7 +20,7 @@ class WaitForPlayersPage extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: BlocBuilder<WaitForPlayersBloc, WaitForPlayersState>(
                   builder: (context, state) {
-                    return Text('Room "${state.roomName}"');
+                    return Text('Room "${state.roomName}"', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),);
                   },
                   buildWhen: (previous, next) => previous.roomName != next.roomName,
                 ),

@@ -25,7 +25,7 @@ class CreateRoomPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text('''
-                    The room "${state.roomName} does not exist yet.
+                    The room "${state.roomName}" does not exist yet.
                     Press "Continue" to create it, you will be the game administrator.
                     '''.unindent()),
                     ),

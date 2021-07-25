@@ -21,12 +21,12 @@ class GameSettingsPage extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text("Game Settings",),
+                    child: Text("Game Settings", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
                   ),
                   Container(
                     alignment: Alignment.centerLeft,
                     padding: const EdgeInsets.all(8.0),
-                    child: Text("Categories"),
+                    child: Text("Categories", style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                   BlocBuilder<GameSettingsBloc, GameSettingsState>(
                       builder: (context, state) => Container(
@@ -35,18 +35,26 @@ class GameSettingsPage extends StatelessWidget {
                           children: [
                             ...state.categories.map((category) => Padding(
                               padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
-                              child: Text(category),
+                              child: Text('${category[0].toUpperCase()}${category.substring(1)}'),
                             )),
                             if (state.admin) Container(
                               width: 30,
-                              child: ElevatedButton(
-                                child: Text("+"),
-                                onPressed: () async {
-                                  final category = await _showAddCategoryDialog(context);
-                                  if (category != null && category.isNotEmpty) {
-                                    BlocProvider.of<GameSettingsBloc>(context).add(GameSettingsEvent.addedCategory(category));
-                                  }
-                                },
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(0.0, 8.0, 0.0, 0.0),
+                                child: Row(
+                                  children: [
+                                    ElevatedButton(
+                                      child: Text("+"),
+                                      onPressed: () async {
+                                        final category = await _showAddCategoryDialog(context);
+                                        if (category != null && category.isNotEmpty) {
+                                          BlocProvider.of<GameSettingsBloc>(context).add(GameSettingsEvent.addedCategory(category));
+                                        }
+                                      },
+                                    ),
+                                    Spacer()
+                                  ],
+                                ),
                               ),
                             )
                           ],
@@ -140,6 +148,7 @@ class GameSettingsPage extends StatelessWidget {
         return AlertDialog(
           title: const Text('Add Category'),
           content: TextField(
+            autofocus: true,
             decoration: InputDecoration(
               border: OutlineInputBorder(),
               labelText: 'Category name',
