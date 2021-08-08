@@ -114,7 +114,7 @@ class GameSettingsPage extends StatelessWidget {
                   ),
                   Expanded(child: Container()),
                   BlocBuilder<GameSettingsBloc, GameSettingsState>(
-                    builder: (context, state) => Padding(
+                    builder: (context, state) => state.admin ? Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ElevatedButton(
                         child: Text("Start"),
@@ -122,8 +122,8 @@ class GameSettingsPage extends StatelessWidget {
                           BlocProvider.of<GameSettingsBloc>(context).add(GameSettingsEvent.startClicked());
                         } : null,
                       ),
-                    ),
-                    buildWhen: (prev, next) => prev.startButtonEnabled != next.startButtonEnabled
+                    ) : Text("The admin is configuring the game settings"),
+                    buildWhen: (prev, next) => (prev.startButtonEnabled != next.startButtonEnabled) || (prev.admin != next.admin)
                   ),
                   BlocListener<GameSettingsBloc, GameSettingsState>(
                     listener: (context, state) {

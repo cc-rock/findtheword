@@ -43,16 +43,12 @@ class CreateRoomPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: state.passwordFieldEnabled ? TextField(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Password',
+                        ),
                         controller: passwordController,
-                      ) : FocusScope(
-                        node: FocusScopeNode(),
-                          child: TextField(
-                            controller: passwordController,
-                            style: Theme.of(context).textTheme.subtitle1?.copyWith(
-                              color: Theme.of(context).disabledColor,
-                            ),
-                          )
-                      ),
+                      ) : Container()
                     ),
                     Expanded(child: Container()),
                     Padding(
@@ -76,7 +72,9 @@ class CreateRoomPage extends StatelessWidget {
                   ],
                 );
               } else if (state is CreateRoomStateSuccess) {
-                BlocProvider.of<NavigationCubit>(context).goToWaitForPlayers(state.roomName);
+                WidgetsBinding.instance?.addPostFrameCallback((_) {
+                  BlocProvider.of<NavigationCubit>(context).goToWaitForPlayers(state.roomName);
+                });
                 return Container();
               } else if (state is CreateRoomStateError) {
                 return Column(

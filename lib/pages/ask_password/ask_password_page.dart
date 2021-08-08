@@ -34,6 +34,10 @@ class AskPasswordPage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Password',
+                      ),
                       controller: passwordController,
                     ),
                   ),

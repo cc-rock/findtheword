@@ -1,6 +1,5 @@
 import 'package:findtheword/app/injector.dart';
 import 'package:findtheword/app/navigation/navigation_widget.dart';
-import 'package:findtheword/pages/page_factory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
